@@ -1,0 +1,93 @@
+name: event_safety_app
+description: "A comprehensive road hazard detection and public event safety app"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Animations
+  cupertino_icons: ^1.0.8
+  lottie: ^3.2.1
+  flutter_animate: ^4.5.0
+  animations: ^2.0.11
+  
+  # State Management
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.7
+  
+  # Networking & API
+  http: ^1.2.2
+  dio: ^5.7.0
+  
+  # Location Services
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  google_maps_flutter: ^2.9.0
+  flutter_polyline_points: ^2.1.0
+  
+  # Local Storage & Notifications
+  flutter_local_notifications: ^18.0.1
+  shared_preferences: ^2.3.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Permissions & Device Info
+  permission_handler: ^11.3.1
+  device_info_plus: ^10.1.2
+  
+  # Camera & Sensors
+  camera: ^0.11.0+2
+  sensors_plus: ^6.0.1
+  image_picker: ^1.1.2
+  
+  # Utilities
+  intl: ^0.19.0
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
+  logger: ^2.4.0
+  
+  # Image Processing & ML Ready
+  image: ^4.2.0
+  flutter_image_compress: ^2.3.0
+  
+  # Charts & Data Visualization
+  fl_chart: ^0.69.2
+  
+  # Connectivity
+  connectivity_plus: ^6.1.0
+  
+  # Encrypted Storage
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  hive_generator: ^2.0.1
+
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/animations/
+    - assets/images/
+  
+  # Uncomment and add Poppins font files when downloaded
+  # Download from: https://fonts.google.com/specimen/Poppins
+  # fonts:
+  #   - family: Poppins
+  #     fonts:
+  #       - asset: assets/fonts/Poppins-Regular.ttf
+  #       - asset: assets/fonts/Poppins-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Poppins-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Poppins-Bold.ttf
+  #         weight: 700
