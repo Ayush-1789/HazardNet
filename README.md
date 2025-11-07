@@ -11,12 +11,17 @@ A comprehensive cross-platform mobile application for detecting and reporting ro
 ### Core Features (MVP)
 - ✅ **Real-time Hazard Detection** - Camera feed with frame processing ready for ML model integration
 - ✅ **Location Tracking** - GPS-based location tracking with geolocator
-- ✅ **Interactive Map** - View hazards on map (Google Maps integration ready)
+- ✅ **Interactive Map with OSM** - OpenStreetMap integration showing hazards with color-coded pins
+  - 🔵 Blue pins: Your own reported hazards
+  - 🟠 Orange pins: Hazards reported by other users
+  - ✅ Verified hazards marked with green checkmark
+  - 📍 Real-time user location tracking
+  - 🗺️ Dark mode support for maps
 - ✅ **Alert System** - Real-time notifications for nearby hazards
 - ✅ **User Authentication** - Mock auth ready for backend API integration
 - ✅ **Dashboard** - Quick access to all features with stats
 - ✅ **Vehicle Health Tracking** - Cumulative damage scoring system
-- ✅ **Beautiful UI** - Material 3 design with smooth animations
+- ✅ **Beautiful UI** - Material 3 design with smooth animations and dark mode
 
 ### Hazard Types Detected
 - 🕳️ Potholes

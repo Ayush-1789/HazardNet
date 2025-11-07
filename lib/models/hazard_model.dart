@@ -16,6 +16,8 @@ class HazardModel extends Equatable {
   final Map<String, dynamic>? metadata; // Additional sensor data
   final String? lane; // Specific lane if detected
   final double? depth; // Estimated depth for potholes (from depth model)
+  final String? reportedBy; // User ID who reported this hazard
+  final String? reportedByName; // Name of the first user who reported
   
   const HazardModel({
     required this.id,
@@ -32,6 +34,8 @@ class HazardModel extends Equatable {
     this.metadata,
     this.lane,
     this.depth,
+    this.reportedBy,
+    this.reportedByName,
   });
   
   @override
@@ -50,6 +54,8 @@ class HazardModel extends Equatable {
     metadata,
     lane,
     depth,
+    reportedBy,
+    reportedByName,
   ];
   
   /// Convert model to JSON
@@ -69,6 +75,8 @@ class HazardModel extends Equatable {
       'metadata': metadata,
       'lane': lane,
       'depth': depth,
+      'reported_by': reportedBy,
+      'reported_by_name': reportedByName,
     };
   }
   
@@ -89,6 +97,8 @@ class HazardModel extends Equatable {
       metadata: json['metadata'] as Map<String, dynamic>?,
       lane: json['lane'] as String?,
       depth: json['depth'] != null ? (json['depth'] as num).toDouble() : null,
+      reportedBy: json['reported_by'] as String?,
+      reportedByName: json['reported_by_name'] as String?,
     );
   }
   
@@ -108,6 +118,8 @@ class HazardModel extends Equatable {
     Map<String, dynamic>? metadata,
     String? lane,
     double? depth,
+    String? reportedBy,
+    String? reportedByName,
   }) {
     return HazardModel(
       id: id ?? this.id,
@@ -124,6 +136,8 @@ class HazardModel extends Equatable {
       metadata: metadata ?? this.metadata,
       lane: lane ?? this.lane,
       depth: depth ?? this.depth,
+      reportedBy: reportedBy ?? this.reportedBy,
+      reportedByName: reportedByName ?? this.reportedByName,
     );
   }
   

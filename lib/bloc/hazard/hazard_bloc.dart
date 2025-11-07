@@ -241,6 +241,9 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
         verificationCount: 5,
         isVerified: true,
         description: 'Large pothole on main road',
+        imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+        reportedBy: 'user123',
+        reportedByName: 'Rajesh Kumar',
       ),
       HazardModel(
         id: _uuid.v4(),
@@ -252,6 +255,9 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
         detectedAt: DateTime.now().subtract(const Duration(hours: 5)),
         verificationCount: 3,
         isVerified: true,
+        imageUrl: 'https://images.unsplash.com/photo-1580883954942-b8abf952e027?w=800',
+        reportedBy: 'user456',
+        reportedByName: 'Priya Sharma',
       ),
       HazardModel(
         id: _uuid.v4(),
@@ -262,6 +268,9 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
         confidence: 0.95,
         detectedAt: DateTime.now().subtract(const Duration(minutes: 30)),
         verificationCount: 2,
+        imageUrl: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800',
+        reportedBy: 'user789',
+        reportedByName: 'Amit Singh',
       ),
     ];
   }

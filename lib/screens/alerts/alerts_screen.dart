@@ -193,10 +193,16 @@ class _AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: alert.isRead ? Colors.white : AppColors.primaryBlue.withOpacity(0.05),
+        color: alert.isRead 
+            ? (isDark ? AppColors.darkCard : Colors.white)
+            : (isDark 
+                ? AppColors.primaryBlue.withOpacity(0.15)
+                : AppColors.primaryBlue.withOpacity(0.05)),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: alert.isRead
@@ -246,7 +252,7 @@ class _AlertCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.grey900,
+                              color: isDark ? AppColors.white : AppColors.grey900,
                             ),
                           ),
                         ),
@@ -266,7 +272,7 @@ class _AlertCard extends StatelessWidget {
                       alert.message,
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.grey600,
+                        color: isDark ? AppColors.grey400 : AppColors.grey600,
                         height: 1.4,
                       ),
                     ),

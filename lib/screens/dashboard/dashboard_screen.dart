@@ -107,7 +107,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurface
+              : Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
@@ -143,9 +145,11 @@ class DashboardHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: AppColors.grey50,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.grey50,
       body: CustomScrollView(
         slivers: [
           // Premium App Bar with Glassmorphism
@@ -285,7 +289,7 @@ class DashboardHomeScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.grey900,
+                            color: isDark ? AppColors.white : AppColors.grey900,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -294,7 +298,7 @@ class DashboardHomeScreen extends StatelessWidget {
                           'Your most used features',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.grey600,
+                            color: isDark ? AppColors.grey400 : AppColors.grey600,
                           ),
                         ),
                       ],
@@ -324,7 +328,7 @@ class DashboardHomeScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.grey900,
+                              color: isDark ? AppColors.white : AppColors.grey900,
                               letterSpacing: -0.3,
                             ),
                           ),
@@ -332,6 +336,7 @@ class DashboardHomeScreen extends StatelessWidget {
                           _buildPremiumVehicleCard(
                             damageScore: state.user.cumulativeDamageScore,
                             needsMaintenance: state.user.needsMaintenanceCheck,
+                            context: context,
                           ),
                         ],
                       ).animate().fadeIn(delay: 400.ms);
@@ -354,7 +359,7 @@ class DashboardHomeScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.grey900,
+                            color: isDark ? AppColors.white : AppColors.grey900,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -363,7 +368,7 @@ class DashboardHomeScreen extends StatelessWidget {
                           'Latest notifications',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.grey600,
+                            color: isDark ? AppColors.grey400 : AppColors.grey600,
                           ),
                         ),
                       ],
@@ -400,7 +405,7 @@ class DashboardHomeScreen extends StatelessWidget {
                     if (state is AlertsLoaded) {
                       final recentAlerts = state.alerts.take(3).toList();
                       if (recentAlerts.isEmpty) {
-                        return _buildEmptyAlertsState();
+                        return _buildEmptyAlertsState(context);
                       }
 
                       return Column(
@@ -410,7 +415,7 @@ class DashboardHomeScreen extends StatelessWidget {
                             .map(
                               (entry) => Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
-                                child: _buildPremiumAlertCard(entry.value)
+                                child: _buildPremiumAlertCard(entry.value, context)
                                     .animate()
                                     .fadeIn(
                                       delay: (600 + entry.key * 100).ms,
@@ -441,10 +446,12 @@ class DashboardHomeScreen extends StatelessWidget {
   }
 
   Widget _buildPremiumStatsCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: AppColors.primaryBlue.withOpacity(0.1),
@@ -492,7 +499,7 @@ class DashboardHomeScreen extends StatelessWidget {
                       'TODAY\'S JOURNEY',
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.grey600,
+                        color: isDark ? AppColors.grey400 : AppColors.grey600,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
                       ),
@@ -502,12 +509,12 @@ class DashboardHomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        const Text(
+                        Text(
                           '2.5',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF1A202C),
+                            color: isDark ? AppColors.white : const Color(0xFF1A202C),
                             letterSpacing: -1,
                           ),
                         ),
@@ -517,7 +524,7 @@ class DashboardHomeScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.grey500,
+                            color: isDark ? AppColors.grey400 : AppColors.grey500,
                           ),
                         ),
                       ],
@@ -531,7 +538,7 @@ class DashboardHomeScreen extends StatelessWidget {
           // Simple Divider
           Container(
             height: 1,
-            color: AppColors.grey200,
+            color: isDark ? AppColors.grey700 : AppColors.grey200,
           ),
           const SizedBox(height: 20),
           // Enhanced Stats Grid
@@ -543,6 +550,7 @@ class DashboardHomeScreen extends StatelessWidget {
                   label: 'Hazards',
                   value: '12',
                   color: AppColors.accentOrange,
+                  context: context,
                 ),
               ),
               Container(
@@ -566,6 +574,7 @@ class DashboardHomeScreen extends StatelessWidget {
                   label: 'Verified',
                   value: '8',
                   color: AppColors.secondaryGreen,
+                  context: context,
                 ),
               ),
               Container(
@@ -589,6 +598,7 @@ class DashboardHomeScreen extends StatelessWidget {
                   label: 'Points',
                   value: '245',
                   color: AppColors.accentPurple,
+                  context: context,
                 ),
               ),
             ],
@@ -603,7 +613,10 @@ class DashboardHomeScreen extends StatelessWidget {
     required String label,
     required String value,
     required Color color,
+    BuildContext? context,
   }) {
+    final isDark = context != null && Theme.of(context).brightness == Brightness.dark;
+    
     return Column(
       children: [
         Container(
@@ -617,10 +630,10 @@ class DashboardHomeScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1A202C),
+            color: isDark ? AppColors.white : const Color(0xFF1A202C),
             letterSpacing: -0.5,
           ),
         ),
@@ -629,7 +642,7 @@ class DashboardHomeScreen extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: AppColors.grey600,
+            color: isDark ? AppColors.grey400 : AppColors.grey600,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.3,
           ),
@@ -768,6 +781,7 @@ class DashboardHomeScreen extends StatelessWidget {
   Widget _buildPremiumVehicleCard({
     required int damageScore,
     required bool needsMaintenance,
+    required BuildContext context,
   }) {
     final progress = (damageScore / 1000).clamp(0.0, 1.0);
     Color progressColor = AppColors.secondaryGreen;
@@ -792,9 +806,11 @@ class DashboardHomeScreen extends StatelessWidget {
       statusEmoji = '👍';
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: progressColor.withOpacity(0.15),
@@ -848,7 +864,7 @@ class DashboardHomeScreen extends StatelessWidget {
                         'HEALTH SCORE',
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.grey600,
+                          color: isDark ? AppColors.grey400 : AppColors.grey600,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
                         ),
@@ -1017,7 +1033,7 @@ class DashboardHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPremiumAlertCard(dynamic alert) {
+  Widget _buildPremiumAlertCard(dynamic alert, BuildContext context) {
     IconData icon = Icons.notifications_active_rounded;
     Color color = AppColors.accentOrange;
     String emoji = '🔔';
@@ -1054,10 +1070,12 @@ class DashboardHomeScreen extends StatelessWidget {
                           alert.type == 'pothole' || 
                           alert.type == 'hazard_proximity';
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: color.withOpacity(0.15),
@@ -1147,7 +1165,7 @@ class DashboardHomeScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.grey900,
+                                color: isDark ? AppColors.white : AppColors.grey900,
                                 letterSpacing: -0.2,
                               ),
                               maxLines: 1,
@@ -1169,7 +1187,7 @@ class DashboardHomeScreen extends StatelessWidget {
                             timeAgo,
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.grey600,
+                              color: isDark ? AppColors.grey400 : AppColors.grey600,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1199,11 +1217,13 @@ class DashboardHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyAlertsState() {
+  Widget _buildEmptyAlertsState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: AppColors.grey200,
@@ -1230,12 +1250,12 @@ class DashboardHomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'All Clear!',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1A202C),
+              color: isDark ? AppColors.white : const Color(0xFF1A202C),
             ),
           ),
           const SizedBox(height: 8),
@@ -1244,7 +1264,7 @@ class DashboardHomeScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.grey600,
+              color: isDark ? AppColors.grey400 : AppColors.grey600,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1260,12 +1280,12 @@ class DashboardHomeScreen extends StatelessWidget {
     return Icons.nightlight_round;
   }
 
-  Widget _buildModernAlertCard(dynamic alert) {
-    return _buildPremiumAlertCard(alert);
+  Widget _buildModernAlertCard(dynamic alert, BuildContext context) {
+    return _buildPremiumAlertCard(alert, context);
   }
 
-  Widget _buildEmptyState() {
-    return _buildEmptyAlertsState();
+  Widget _buildEmptyState(BuildContext context) {
+    return _buildEmptyAlertsState(context);
   }
 
   String _getGreeting() {
