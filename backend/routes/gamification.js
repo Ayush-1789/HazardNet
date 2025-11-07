@@ -103,7 +103,7 @@ router.get('/:hazardId/photos', async (req, res) => {
     const { hazardId } = req.params;
     
     const result = await pool.query(
-      `SELECT hp.*, u.username as uploaded_by_username
+      `SELECT hp.*, u.display_name as uploaded_by_name
        FROM hazard_photos hp
        LEFT JOIN users u ON hp.uploaded_by = u.id
        WHERE hp.hazard_id = $1

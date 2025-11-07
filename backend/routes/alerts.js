@@ -39,7 +39,7 @@ router.get('/', authenticateToken, async (req, res) => {
       query += ' AND a.is_read = false';
     }
 
-    query += ' ORDER BY a.created_at DESC LIMIT 50';
+    query += ' ORDER BY a.timestamp DESC LIMIT 50';
 
     const result = await pool.query(query, [req.user.userId]);
 
@@ -52,7 +52,7 @@ router.get('/', authenticateToken, async (req, res) => {
       isRead: a.is_read,
       hazardId: a.hazard_id,
       hazardType: a.hazard_type,
-      timestamp: a.created_at,
+      timestamp: a.timestamp,
       metadata: a.metadata
     }));
 
@@ -395,7 +395,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
         COUNT(*) FILTER (WHERE severity = 'critical') as critical_alerts,
         COUNT(*) FILTER (WHERE severity = 'emergency') as emergency_alerts,
         COUNT(*) FILTER (WHERE type = 'proximity') as proximity_alerts,
-        COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours') as alerts_24h
+        COUNT(*) FILTER (WHERE timestamp >= NOW() - INTERVAL '24 hours') as alerts_24h
        FROM alerts
        WHERE user_id = $1`,
       [req.user.userId]
@@ -414,7 +414,7 @@ router.delete('/cleanup', authenticateToken, async (req, res) => {
     const result = await pool.query(
       `DELETE FROM alerts 
        WHERE user_id = $1 
-       AND created_at < NOW() - INTERVAL '30 days'
+       AND timestamp < NOW() - INTERVAL '30 days'
        AND is_read = true`,
       [req.user.userId]
     );

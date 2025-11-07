@@ -60,8 +60,8 @@ CREATE INDEX idx_user_badges_type ON user_badges(badge_type);
 CREATE OR REPLACE VIEW leaderboard AS
 SELECT 
     u.id,
-    u.username,
-    u.full_name,
+    u.display_name,
+    u.email,
     COALESCE(up.total_points, 0) as points,
     COALESCE(up.level, 1) as level,
     COALESCE(up.reports_count, 0) as reports,
@@ -72,7 +72,7 @@ FROM users u
 LEFT JOIN user_points up ON u.id = up.user_id
 LEFT JOIN user_badges ub ON u.id = ub.user_id
 WHERE u.is_active = TRUE
-GROUP BY u.id, u.username, u.full_name, up.total_points, up.level, 
+GROUP BY u.id, u.display_name, u.email, up.total_points, up.level, 
          up.reports_count, up.verifications_count, up.accuracy_score
 ORDER BY points DESC, reports DESC;
 

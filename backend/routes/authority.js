@@ -76,7 +76,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
 
     const result = await pool.query(
-      `SELECT au.*, u.username, u.full_name, u.email, u.phone_number
+      `SELECT au.*, u.display_name, u.email, u.phone_number
        FROM authority_users au
        JOIN users u ON au.user_id = u.id
        WHERE au.user_id = $1`,
@@ -139,8 +139,8 @@ router.get('/hazards', authenticateToken, checkAuthority, async (req, res) => {
     const query = `
       SELECT 
         h.*,
-        u.username as reported_by_username,
-        u.full_name as reported_by_name,
+        u.display_name as reported_by_name,
+        u.email as reported_by_email,
         COUNT(DISTINCT hv.id) as verification_count,
         (SELECT action_type FROM hazard_authority_actions 
          WHERE hazard_id = h.id 
@@ -149,7 +149,7 @@ router.get('/hazards', authenticateToken, checkAuthority, async (req, res) => {
       LEFT JOIN users u ON h.reported_by = u.id
       LEFT JOIN hazard_verifications hv ON h.id = hv.hazard_id
       WHERE ${whereConditions.join(' AND ')}
-      GROUP BY h.id, u.username, u.full_name
+      GROUP BY h.id, u.display_name, u.email
       ORDER BY h.severity DESC, h.detected_at DESC
       LIMIT $${paramCount - 1} OFFSET $${paramCount}
     `;

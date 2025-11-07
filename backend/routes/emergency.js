@@ -145,7 +145,7 @@ router.post('/sos', authenticateToken, async (req, res) => {
 
     // Get user details
     const userResult = await client.query(
-      'SELECT username, full_name, phone_number FROM users WHERE id = $1',
+      'SELECT display_name, email, phone_number FROM users WHERE id = $1',
       [userId]
     );
     const user = userResult.rows[0];
@@ -161,7 +161,7 @@ router.post('/sos', authenticateToken, async (req, res) => {
     // Notify nearby users (within 5km radius)
     const nearbyDistance = 5.0; // km
     const nearbyUsersResult = await client.query(
-      `SELECT DISTINCT u.id, u.username
+      `SELECT DISTINCT u.id, u.display_name
        FROM users u
        JOIN trip_sessions ts ON u.id = ts.user_id
        WHERE ts.is_active = TRUE
@@ -185,7 +185,7 @@ router.post('/sos', authenticateToken, async (req, res) => {
         [
           nearbyUser.id,
           'Emergency SOS Alert Nearby',
-          `User ${user.full_name || user.username} has triggered an SOS alert near your location`,
+          `User ${user.display_name} has triggered an SOS alert near your location`,
           'emergency',
           'critical',
           JSON.stringify({
@@ -296,8 +296,8 @@ router.get('/sos/active/nearby', authenticateToken, async (req, res) => {
     const result = await pool.query(
       `SELECT 
          sa.*,
-         u.username,
-         u.full_name,
+         u.display_name,
+         u.email,
          (
            6371 * acos(
              cos(radians($1)) * cos(radians(sa.latitude)) *
