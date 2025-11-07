@@ -63,8 +63,8 @@ dependencies:
   # Connectivity
   connectivity_plus: ^6.1.0
   
-  # Encrypted Storage
-  flutter_secure_storage: ^9.2.2
+  # Encrypted Storage (commented out - requires Visual Studio ATL)
+  # flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:
