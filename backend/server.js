@@ -12,6 +12,9 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
+
 // Test database connection
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
@@ -34,6 +37,9 @@ app.use('/api/hazards', require('./routes/hazards'));
 app.use('/api/alerts', require('./routes/alerts'));
 app.use('/api/trips', require('./routes/trips'));
 app.use('/api/sensor-data', require('./routes/sensor-data'));
+app.use('/api/gamification', require('./routes/gamification'));
+app.use('/api/emergency', require('./routes/emergency'));
+app.use('/api/authority', require('./routes/authority'));
 
 // Error handler
 app.use((err, req, res, next) => {

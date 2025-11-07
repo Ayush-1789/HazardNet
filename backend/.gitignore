@@ -16,3 +16,10 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Uploaded files (but keep directory structure)
+uploads/hazard-photos/*.jpg
+uploads/hazard-photos/*.jpeg
+uploads/hazard-photos/*.png
+uploads/hazard-photos/*.webp
+!uploads/hazard-photos/.gitkeep
