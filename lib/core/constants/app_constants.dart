@@ -43,11 +43,15 @@ class AppConstants {
   static const int gyroscopeUpdateIntervalMs = 100;
   static const int accelerometerUpdateIntervalMs = 100;
   static const double impactThresholdG = 2.0; // G-force threshold for impact detection
+  static const double gyroscopeImpactThresholdRadPerSec = 1.5; // Lowered for easier detection (was 3.5)
+  static const int gyroCaptureWindowSeconds = 5; // How far back we keep buffered frames
+  static const int gyroTriggerCooldownSeconds = 3; // Cooldown before another capture can fire
+  static const int maxStoredCaptures = 20; // Limit stored auto captures
   
   // Camera Settings
-  static const int imageQuality = 85;
-  static const int maxImageWidth = 1280;
-  static const int maxImageHeight = 720;
+  static const int imageQuality = 60;
+  static const int maxImageWidth = 960;
+  static const int maxImageHeight = 540;
   
   // Notification Settings
   static const String notificationChannelId = 'hazard_alerts';
@@ -59,6 +63,8 @@ class AppConstants {
   static const String keySettings = 'app_settings';
   static const String keyHazardCache = 'hazard_cache';
   static const String keyDamageScore = 'cumulative_damage_score';
+  static const String keyCapturedHazards = 'captured_hazards';
+  static const String capturedHazardFolder = 'captured_hazards';
   
   // Vehicle Damage Tracking
   static const int damageScoreThreshold = 850; // Points before maintenance alert

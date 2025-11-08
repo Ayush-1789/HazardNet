@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:camera/camera.dart';
+import 'package:intl/intl.dart';
 import 'package:event_safety_app/core/theme/app_colors.dart';
 import 'package:event_safety_app/bloc/camera/camera_bloc.dart';
 import 'package:event_safety_app/bloc/camera/camera_event.dart';
 import 'package:event_safety_app/bloc/camera/camera_state.dart';
 import 'package:event_safety_app/bloc/location/location_bloc.dart';
 import 'package:event_safety_app/bloc/location/location_event.dart';
+import 'package:event_safety_app/models/captured_hazard_model.dart';
+import 'package:event_safety_app/widgets/bounding_box_overlay.dart';
 
 /// Camera screen for real-time hazard detection
 class CameraScreen extends StatefulWidget {
@@ -20,6 +24,7 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isDetecting = false;
   late final LocationBloc _locationBloc;
   late final CameraBloc _cameraBloc;
+  String? _lastAutoCaptureId;
 
   @override
   void initState() {
@@ -31,6 +36,14 @@ class _CameraScreenState extends State<CameraScreen> {
     // Initialize camera and start location tracking
     _cameraBloc.add(InitializeCamera());
     _locationBloc.add(StartLocationTracking());
+    
+    // Auto-start detection after camera initializes
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() => _isDetecting = true);
+        _cameraBloc.add(StartDetection());
+      }
+    });
   }
 
   @override
@@ -49,6 +62,29 @@ class _CameraScreenState extends State<CameraScreen> {
         listener: (context, state) {
           if (state is CameraPermissionDenied) {
             _showPermissionDialog();
+          }
+          if (state is CameraReady && state.capturedImagePath != null) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text('Image saved to ${state.capturedImagePath}'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+          }
+          if (state is CameraReady && state.lastCapturedHazardId != null) {
+            if (_lastAutoCaptureId != state.lastCapturedHazardId) {
+              _lastAutoCaptureId = state.lastCapturedHazardId;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(
+                    content: Text('Gyroscope trigger captured a hazard clip'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+            }
           }
         },
         builder: (context, state) {
@@ -85,6 +121,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Widget _buildCameraView(CameraReady state) {
     final controller = state.controller;
+    final previewSize = controller.value.previewSize ?? const Size(640, 480);
 
     return Stack(
       fit: StackFit.expand,
@@ -92,7 +129,19 @@ class _CameraScreenState extends State<CameraScreen> {
         // Camera preview
         CameraPreview(controller),
 
-        // Detection overlay
+        // Bounding box overlay for detections
+        if (state.detections.isNotEmpty)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return BoundingBoxOverlay(
+                detections: state.detections,
+                previewSize: previewSize,
+                screenSize: Size(constraints.maxWidth, constraints.maxHeight),
+              );
+            },
+          ),
+
+        // Detection overlay border
         if (_isDetecting)
           Container(
             decoration: BoxDecoration(
@@ -157,10 +206,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
                     // Settings button
                     _CircleButton(
-                      icon: Icons.settings_outlined,
-                      onPressed: () {
-                        // TODO: Show settings bottom sheet
-                      },
+                      icon: Icons.collections_bookmark_outlined,
+                      onPressed: () => _showCapturedHazardsSheet(state),
                     ),
                   ],
                 ),
@@ -185,17 +232,23 @@ class _CameraScreenState extends State<CameraScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               _StatItem(
-                                label: 'Frames',
-                                value: '${state.framesProcessed}',
+                                label: 'Detections',
+                                value: '${state.detections.length}',
+                                valueColor: state.detections.isNotEmpty 
+                                    ? AppColors.severityHigh 
+                                    : Colors.white,
                               ),
                               _StatItem(
                                 label: 'FPS',
                                 value: state.fps.toStringAsFixed(1),
                               ),
                               _StatItem(
-                                label: 'Status',
-                                value: 'Active',
-                                valueColor: AppColors.secondaryGreen,
+                                label: 'Frames',
+                                value: '${state.framesProcessed}',
+                              ),
+                              _StatItem(
+                                label: 'Captures',
+                                value: '${state.capturedHazards.length}',
                               ),
                             ],
                           ),
@@ -359,6 +412,208 @@ class _CameraScreenState extends State<CameraScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showCapturedHazardsSheet(CameraReady state) {
+    final captures = state.capturedHazards.reversed.toList();
+    if (captures.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('No captured hazards yet'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+
+    final formatter = DateFormat('MMM d • HH:mm:ss');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black.withOpacity(0.9),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Text(
+                  'Captured Hazards',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: captures.length,
+                    separatorBuilder: (_, __) => const Divider(color: Colors.white10),
+                    itemBuilder: (context, index) {
+                      final hazard = captures[index];
+                      final file = File(hazard.imagePath);
+                      final imageExists = file.existsSync();
+                      final detectionLabel = hazard.detections.isNotEmpty
+                          ? '${hazard.detections.first.label} ${(hazard.detections.first.confidence * 100).toStringAsFixed(0)}%'
+                          : 'No detections';
+                      final impactRaw = hazard.sensorSnapshot['impact_magnitude'];
+                      final impact = impactRaw is num ? impactRaw.toDouble() : null;
+                      final latitudeRaw = hazard.locationSnapshot?['latitude'];
+                      final longitudeRaw = hazard.locationSnapshot?['longitude'];
+                      final latitude = latitudeRaw is num ? latitudeRaw.toDouble() : null;
+                      final longitude = longitudeRaw is num ? longitudeRaw.toDouble() : null;
+                      final subtitleParts = <String>[
+                        formatter.format(hazard.timestamp.toLocal()),
+                        if (impact != null) 'Impact ${impact.toStringAsFixed(2)} rad/s',
+                        if (latitude != null && longitude != null)
+                          'Lat ${latitude.toStringAsFixed(4)}, Lng ${longitude.toStringAsFixed(4)}',
+                      ];
+                      final subtitle = subtitleParts.join(' • ');
+
+                      return ListTile(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          _showCapturedHazardPreview(hazard);
+                        },
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: imageExists
+                              ? Image.file(
+                                  file,
+                                  width: 56,
+                                  height: 56,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 56,
+                                  height: 56,
+                                  color: Colors.white12,
+                                  child: const Icon(Icons.image_not_supported, color: Colors.white54),
+                                ),
+                        ),
+                        title: Text(
+                          detectionLabel,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          subtitle,
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.white70),
+                          onPressed: () {
+                            context.read<CameraBloc>().add(DeleteCapturedHazard(hazard.id));
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCapturedHazardPreview(CapturedHazardModel hazard) {
+    final file = File(hazard.imagePath);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.black,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (file.existsSync())
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(file),
+                  )
+                else
+                  Container(
+                    height: 200,
+                    alignment: Alignment.center,
+                    color: Colors.white12,
+                    child: const Text('Image not available', style: TextStyle(color: Colors.white54)),
+                  ),
+                const SizedBox(height: 16),
+                if (hazard.detections.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: hazard.detections.map((detection) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          '${detection.label} • ${(detection.confidence * 100).toStringAsFixed(1)}%',
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                      );
+                    }).toList(),
+                  )
+                else
+                  const Text('No detections recorded', style: TextStyle(color: Colors.white70)),
+                const SizedBox(height: 8),
+                Text(
+                  'Captured at ${DateFormat('MMM d, HH:mm:ss').format(hazard.timestamp.toLocal())}',
+                  style: const TextStyle(color: Colors.white60, fontSize: 12),
+                ),
+                if (hazard.sensorSnapshot['impact_magnitude'] != null)
+                  Text(
+                    () {
+                      final impact = hazard.sensorSnapshot['impact_magnitude'];
+                      if (impact is num) {
+                        return 'Impact magnitude: ${impact.toDouble().toStringAsFixed(2)} rad/s';
+                      }
+                      return 'Impact magnitude: unavailable';
+                    }(),
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
+                if (hazard.locationSnapshot != null)
+                  Text(
+                    () {
+                      final latRaw = hazard.locationSnapshot!['latitude'];
+                      final lngRaw = hazard.locationSnapshot!['longitude'];
+                      if (latRaw is! num || lngRaw is! num) {
+                        return 'Location: unavailable';
+                      }
+                      return 'Location: ${latRaw.toDouble().toStringAsFixed(5)}, ${lngRaw.toDouble().toStringAsFixed(5)}';
+                    }(),
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

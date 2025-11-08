@@ -18,6 +18,7 @@ dependencies:
   
   # State Management
   flutter_bloc: ^8.1.6
+  bloc_concurrency: ^0.2.5
   equatable: ^2.0.7
   
   # Networking & API
@@ -37,6 +38,7 @@ dependencies:
   shared_preferences: ^2.3.3
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  path_provider: ^2.1.4
   
   # Permissions & Device Info
   permission_handler: ^11.3.1
@@ -47,6 +49,7 @@ dependencies:
   sensors_plus: ^6.0.1
   image_picker: ^1.1.2
   
+  
   # Utilities
   intl: ^0.19.0
   url_launcher: ^6.3.1
@@ -56,6 +59,9 @@ dependencies:
   # Image Processing & ML Ready
   image: ^4.2.0
   flutter_image_compress: ^2.3.0
+  
+  # TensorFlow Lite for ML Model Inference
+  tflite_flutter: ^0.11.0
   
   # Charts & Data Visualization
   fl_chart: ^0.69.2
@@ -80,6 +86,7 @@ flutter:
   assets:
     - assets/animations/
     - assets/images/
+    - models/
   
   # Uncomment and add Poppins font files when downloaded
   # Download from: https://fonts.google.com/specimen/Poppins
