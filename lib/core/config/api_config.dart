@@ -1,14 +1,14 @@
 import 'package:http/http.dart' as http;
 
 /// Smart Backend Configuration with Triple Failover System
-/// Priority 1: Laptop (192.168.31.39:3000) - Fastest, Free
-/// Priority 2: Railway (Cloud) - Free, Always On
-/// Priority 3: AWS (Cloud) - Backup, Uses Credits
+/// Priority 1: Laptop (192.168.31.39:3000) - Fastest, Free, Local
+/// Priority 2: Railway (Cloud) - Free, NO COLD STARTS, Instant
+/// Priority 3: Render (Cloud) - Backup, 50s Cold Start
 class ApiConfig {
   // Backend URLs - Priority Order
   static const String laptopBackendUrl = 'http://192.168.31.39:3000/api';
-  static const String railwayBackendUrl = 'https://hazardnet-9yd2.onrender.com/api';
-  static const String awsBackendUrl = 'https://your-aws-url.com/api'; // Will be updated after AWS deployment
+  static const String railwayBackendUrl = 'https://hazardnet-production.up.railway.app'; // Railway - NO cold starts! (no /api prefix)
+  static const String awsBackendUrl = 'https://hazardnet-9yd2.onrender.com/api'; // Render backup
   
   // Current active backend
   static String _currentBackendUrl = laptopBackendUrl;
@@ -22,49 +22,78 @@ class ApiConfig {
   
   /// Try to connect to backend with automatic triple failover
   static Future<String> getAvailableBackendUrl() async {
+    print('🔍 [BACKEND] Starting backend connection check...');
+    print('📱 [BACKEND] Device time: ${DateTime.now()}');
+    
     // Priority 1: Try Laptop (fastest, free, local)
+    print('🔌 [BACKEND] Testing Priority 1: Laptop ($laptopBackendUrl)');
     try {
+      final startTime = DateTime.now();
       final laptopResponse = await _checkBackendHealth(laptopBackendUrl);
+      final duration = DateTime.now().difference(startTime);
+      
       if (laptopResponse) {
         _currentBackendUrl = laptopBackendUrl;
         _currentBackendType = BackendType.laptop;
-        print('✅ Connected to Laptop Backend (Primary)');
+        print('✅ [BACKEND] SUCCESS: Connected to Laptop Backend in ${duration.inMilliseconds}ms');
+        print('🚀 [BACKEND] Using: $laptopBackendUrl');
         return laptopBackendUrl;
+      } else {
+        print('❌ [BACKEND] FAILED: Laptop backend returned non-200 status');
       }
     } catch (e) {
-      print('⚠️ Laptop backend not available: $e');
+      print('⚠️ [BACKEND] ERROR: Laptop backend not available');
+      print('📝 [BACKEND] Details: ${e.toString()}');
     }
     
-    // Priority 2: Try Railway (free, always on)
+    // Priority 2: Try Render (cloud, free tier with cold start)
+    print('☁️ [BACKEND] Testing Priority 2: Render Cloud ($railwayBackendUrl)');
+    print('⏰ [BACKEND] Note: Render may take up to 60 seconds if sleeping...');
     try {
+      final startTime = DateTime.now();
       final railwayResponse = await _checkBackendHealth(railwayBackendUrl);
+      final duration = DateTime.now().difference(startTime);
+      
       if (railwayResponse) {
         _currentBackendUrl = railwayBackendUrl;
         _currentBackendType = BackendType.railway;
-        print('✅ Connected to Railway Backend (Fallback 1)');
+        print('✅ [BACKEND] SUCCESS: Connected to Render Cloud in ${duration.inSeconds}s');
+        print('🚀 [BACKEND] Using: $railwayBackendUrl');
         return railwayBackendUrl;
+      } else {
+        print('❌ [BACKEND] FAILED: Render backend returned non-200 status');
       }
     } catch (e) {
-      print('⚠️ Railway backend not available: $e');
+      print('⚠️ [BACKEND] ERROR: Render backend not available');
+      print('📝 [BACKEND] Details: ${e.toString()}');
     }
     
-    // Priority 3: Try AWS (backup, uses credits)
+    // Priority 3: Try Vercel (backup cloud)
+    print('☁️ [BACKEND] Testing Priority 3: Vercel Backup ($awsBackendUrl)');
     try {
+      final startTime = DateTime.now();
       final awsResponse = await _checkBackendHealth(awsBackendUrl);
+      final duration = DateTime.now().difference(startTime);
+      
       if (awsResponse) {
         _currentBackendUrl = awsBackendUrl;
         _currentBackendType = BackendType.aws;
-        print('✅ Connected to AWS Backend (Fallback 2)');
+        print('✅ [BACKEND] SUCCESS: Connected to Vercel Backup in ${duration.inSeconds}s');
+        print('🚀 [BACKEND] Using: $awsBackendUrl');
         return awsBackendUrl;
+      } else {
+        print('❌ [BACKEND] FAILED: Vercel backend returned non-200 status');
       }
     } catch (e) {
-      print('❌ AWS backend not available: $e');
+      print('⚠️ [BACKEND] ERROR: Vercel backend not available');
+      print('📝 [BACKEND] Details: ${e.toString()}');
     }
     
     // If all fail, default to laptop (will show error in app)
     _currentBackendUrl = laptopBackendUrl;
     _currentBackendType = BackendType.laptop;
-    print('❌ All backends unavailable, defaulting to laptop');
+    print('💥 [BACKEND] CRITICAL: All backends unavailable!');
+    print('🔄 [BACKEND] Defaulting to laptop, user will see connection error');
     return laptopBackendUrl;
   }
   
@@ -72,12 +101,30 @@ class ApiConfig {
   static Future<bool> _checkBackendHealth(String baseUrl) async {
     try {
       final healthUrl = baseUrl.replaceAll('/api', '/health');
+      // Longer timeout for cloud backends (Render takes 50s to wake from sleep)
+      final timeout = baseUrl.contains('192.168') 
+          ? const Duration(seconds: 3)  // Laptop: quick timeout
+          : const Duration(seconds: 60); // Cloud: wait for cold start
+      
+      print('🏥 [HEALTH] Checking: $healthUrl');
+      print('⏱️ [HEALTH] Timeout: ${timeout.inSeconds}s');
+      
       final response = await http.get(
         Uri.parse(healthUrl),
-      ).timeout(const Duration(seconds: 3));
+      ).timeout(timeout);
       
-      return response.statusCode == 200;
+      print('📡 [HEALTH] Response status: ${response.statusCode}');
+      print('📦 [HEALTH] Response body: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        print('✅ [HEALTH] Backend is healthy!');
+        return true;
+      } else {
+        print('⚠️ [HEALTH] Backend returned status ${response.statusCode}');
+        return false;
+      }
     } catch (e) {
+      print('❌ [HEALTH] Health check failed: ${e.toString()}');
       return false;
     }
   }

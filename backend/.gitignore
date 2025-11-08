@@ -23,3 +23,4 @@ uploads/hazard-photos/*.jpeg
 uploads/hazard-photos/*.png
 uploads/hazard-photos/*.webp
 !uploads/hazard-photos/.gitkeep
+.vercel

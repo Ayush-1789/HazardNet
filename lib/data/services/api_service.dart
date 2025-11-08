@@ -49,13 +49,23 @@ class ApiService {
         uri = uri.replace(queryParameters: queryParams);
       }
 
+      print('🌐 [API-GET] Request to: $uri');
+      print('🔑 [API-GET] Has auth token: ${_authToken != null}');
+      print('📤 [API-GET] Query params: $queryParams');
+      
+      final startTime = DateTime.now();
       final response = await _client.get(
         uri,
         headers: _buildHeaders(),
       );
+      final duration = DateTime.now().difference(startTime);
 
+      print('📥 [API-GET] Response received in ${duration.inMilliseconds}ms');
+      print('📊 [API-GET] Status: ${response.statusCode}');
+      
       return _handleResponse(response);
     } catch (e) {
+      print('❌ [API-GET] Error: ${e.toString()}');
       throw _handleError(e);
     }
   }
@@ -66,14 +76,26 @@ class ApiService {
     Map<String, dynamic>? body,
   }) async {
     try {
+      final uri = Uri.parse('${AppConstants.baseApiUrl}$endpoint');
+      
+      print('🌐 [API-POST] Request to: $uri');
+      print('🔑 [API-POST] Has auth token: ${_authToken != null}');
+      print('📤 [API-POST] Body: ${body != null ? jsonEncode(body) : 'null'}');
+      
+      final startTime = DateTime.now();
       final response = await _client.post(
-        Uri.parse('${AppConstants.baseApiUrl}$endpoint'),
+        uri,
         headers: _buildHeaders(),
         body: body != null ? jsonEncode(body) : null,
       );
+      final duration = DateTime.now().difference(startTime);
+
+      print('📥 [API-POST] Response received in ${duration.inMilliseconds}ms');
+      print('📊 [API-POST] Status: ${response.statusCode}');
 
       return _handleResponse(response);
     } catch (e) {
+      print('❌ [API-POST] Error: ${e.toString()}');
       throw _handleError(e);
     }
   }

@@ -1,5 +1,5 @@
 name: event_safety_app
-description: "A comprehensive road hazard detection and public event safety app"
+description: "HazardNet - Real-time Road Hazard Detection & Community Safety Network"
 publish_to: 'none'
 version: 1.0.0+1
 

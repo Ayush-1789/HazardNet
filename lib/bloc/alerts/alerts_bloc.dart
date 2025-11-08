@@ -27,19 +27,27 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
     Emitter<AlertsState> emit,
   ) async {
     try {
+      print('🔔 [ALERTS-BLOC] Loading alerts...');
       emit(AlertsLoading());
       
       // Load alerts from API
+      print('🔔 [ALERTS-BLOC] Calling API service...');
       _allAlerts = await _alertService.getUserAlerts();
       
+      print('🔔 [ALERTS-BLOC] Received ${_allAlerts.length} alerts');
       final unreadCount = _allAlerts.where((alert) => !alert.isRead).length;
+      print('🔔 [ALERTS-BLOC] Unread count: $unreadCount');
       
       emit(AlertsLoaded(
         alerts: _allAlerts,
         unreadCount: unreadCount,
       ));
-    } catch (e) {
-      emit(AlertsError(e.toString()));
+      print('✅ [ALERTS-BLOC] Alerts loaded successfully');
+    } catch (e, stackTrace) {
+      print('❌ [ALERTS-BLOC] Load alerts failed');
+      print('📝 [ALERTS-BLOC] Error: ${e.toString()}');
+      print('📚 [ALERTS-BLOC] Stack trace: $stackTrace');
+      emit(AlertsError('Failed to load alerts: ${e.toString()}'));
     }
   }
   

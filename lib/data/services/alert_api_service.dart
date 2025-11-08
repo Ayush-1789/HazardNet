@@ -17,6 +17,8 @@ class AlertApiService {
     int limit = 50,
     int offset = 0,
   }) async {
+    print('🔔 [ALERT-API] Getting user alerts...');
+    
     final queryParams = <String, String>{
       'limit': limit.toString(),
       'offset': offset.toString(),
@@ -26,12 +28,23 @@ class AlertApiService {
       queryParams['is_read'] = isRead.toString();
     }
 
+    print('🔔 [ALERT-API] Query params: $queryParams');
+    
     final response = await _apiService.get(
       AppConstants.alertsEndpoint,
       queryParams: queryParams,
     );
 
+    print('🔔 [ALERT-API] Response received: ${response.keys}');
+    
+    if (!response.containsKey('alerts')) {
+      print('❌ [ALERT-API] Response missing "alerts" key. Full response: $response');
+      throw Exception('Invalid response format: missing "alerts" field');
+    }
+    
     final alertsData = response['alerts'] as List<dynamic>;
+    print('🔔 [ALERT-API] Processing ${alertsData.length} alerts');
+    
     return alertsData
         .map((json) => AlertModel.fromJson(json as Map<String, dynamic>))
         .toList();
