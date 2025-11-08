@@ -783,6 +783,79 @@ class TFLiteService {
     return intersectionArea / unionArea;
   }
 
+  /// Draw bounding boxes on a JPEG image for visualization
+  Uint8List? drawDetectionsOnJpeg(
+    Uint8List jpegBytes,
+    List<Detection> detections, {
+    int strokeWidth = 4,
+  }) {
+    try {
+      final img.Image? decoded = img.decodeImage(jpegBytes);
+      if (decoded == null) return null;
+      
+      final int width = decoded.width;
+      final int height = decoded.height;
+      
+      for (final detection in detections) {
+        final box = detection.boundingBox;
+        
+        // Convert normalized coordinates to pixel coordinates
+        final int x1 = (box.left * width).round().clamp(0, width - 1);
+        final int y1 = (box.top * height).round().clamp(0, height - 1);
+        final int x2 = (box.right * width).round().clamp(0, width - 1);
+        final int y2 = (box.bottom * height).round().clamp(0, height - 1);
+        
+        // Get color for this class
+        final colorValue = ModelConfig.getColorForClass(detection.label);
+        final color = img.ColorRgb8(
+          (colorValue >> 16) & 0xFF,
+          (colorValue >> 8) & 0xFF,
+          colorValue & 0xFF,
+        );
+        
+        // Draw rectangle
+        img.drawRect(
+          decoded,
+          x1: x1,
+          y1: y1,
+          x2: x2,
+          y2: y2,
+          color: color,
+          thickness: strokeWidth,
+        );
+        
+        // Draw label background and text
+        final label = '${detection.label} ${(detection.confidence * 100).toStringAsFixed(1)}%';
+        final textY = (y1 - 20).clamp(0, height - 20);
+        
+        // Draw semi-transparent background for text
+        img.fillRect(
+          decoded,
+          x1: x1,
+          y1: textY,
+          x2: (x1 + label.length * 8).clamp(0, width),
+          y2: textY + 16,
+          color: img.ColorRgb8(0, 0, 0),
+        );
+        
+        // Draw text
+        img.drawString(
+          decoded,
+          label,
+          font: img.arial14,
+          x: x1 + 2,
+          y: textY + 2,
+          color: color,
+        );
+      }
+      
+      return Uint8List.fromList(img.encodeJpg(decoded, quality: AppConstants.imageQuality));
+    } catch (e) {
+      print('❌ Error drawing detections: $e');
+      return null;
+    }
+  }
+
   /// Dispose resources
   void dispose() {
     _interpreter?.close();

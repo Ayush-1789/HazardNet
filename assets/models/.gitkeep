@@ -1,0 +1,3 @@
+# Models directory
+# Place TensorFlow Lite (.tflite) model files here for hazard detection
+# Expected: unified_hazards_int8.tflite

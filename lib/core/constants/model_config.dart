@@ -11,6 +11,8 @@ class ModelConfig {
   // ============================================
   // Model path (automatically constructed)
   // ============================================
+  // The models are stored under the `detection_models/` folder in this repo.
+  // Keep this in sync with `flutter` assets declared in `pubspec.yaml`.
   static const String MODEL_PATH = 'detection_models/$MODEL_FILENAME';
   
   // ============================================

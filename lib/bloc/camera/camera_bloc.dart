@@ -199,6 +199,14 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
     
     if (bestFrame != null && bestDetections.isNotEmpty) {
+      // Draw bounding boxes on the image before saving
+      final annotatedImage = _tfliteService.drawDetectionsOnJpeg(
+        bestFrame.bytes,
+        bestDetections,
+      );
+      
+      final imageToSave = annotatedImage ?? bestFrame.bytes;
+      
       final capturedDetections = bestDetections.map((d) => CapturedDetectionModel.fromDetection(d)).toList();
       final hazard = CapturedHazardModel(
         id: _uuid.v4(), 
@@ -208,7 +216,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         sensorSnapshot: event.sensorData.toJson()
       );
       
-      final savedHazard = await _hazardStore.saveHazard(hazard: hazard, imageBytes: bestFrame.bytes);
+      final savedHazard = await _hazardStore.saveHazard(hazard: hazard, imageBytes: imageToSave);
       
       if (state is CameraReady) {
         final currentState = state as CameraReady;
