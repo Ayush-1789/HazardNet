@@ -11,7 +11,7 @@ class ModelConfig {
   // ============================================
   // Model path (automatically constructed)
   // ============================================
-  static const String MODEL_PATH = 'models/$MODEL_FILENAME';
+  static const String MODEL_PATH = 'detection_models/$MODEL_FILENAME';
   
   // ============================================
   // Model Input/Output Configuration
