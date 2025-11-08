@@ -6,10 +6,15 @@ const { pool } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0'; // Listen on all network interfaces
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins for development
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Serve uploaded files
@@ -55,10 +60,13 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 HazardNet API Server running on http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 HazardNet API Server running on:`);
+  console.log(`   Local:   http://localhost:${PORT}`);
+  console.log(`   Network: http://192.168.31.39:${PORT}`);
+  console.log(`📊 Health check: http://192.168.31.39:${PORT}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📱 Mobile app can now connect!`);
 });
 
 // Handle server errors

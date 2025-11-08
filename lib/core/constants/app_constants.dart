@@ -6,9 +6,10 @@ class AppConstants {
   
   // API Configuration
   // TODO: Replace with your actual backend URL after deploying the backend
-  // For local development: 'http://localhost:3000/api'
+  // For local development on same PC: 'http://localhost:3000/api'
+  // For mobile device on same network: 'http://192.168.31.39:3000/api'
   // For production: 'https://your-backend.vercel.app/api'
-  static const String baseApiUrl = 'http://localhost:3000/api';
+  static const String baseApiUrl = 'http://192.168.31.39:3000/api';
   
   // Authentication Endpoints
   static const String authLoginEndpoint = '/auth/login';
