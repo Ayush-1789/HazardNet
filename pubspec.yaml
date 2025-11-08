@@ -86,7 +86,7 @@ flutter:
   assets:
     - assets/animations/
     - assets/images/
-    - models/
+    - detection_models/
   
   # Uncomment and add Poppins font files when downloaded
   # Download from: https://fonts.google.com/specimen/Poppins
