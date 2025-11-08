@@ -10,9 +10,9 @@ class ApiConfig {
   static const String railwayBackendUrl = 'https://hazardnet-production.up.railway.app/api'; // Railway - NO cold starts!
   static const String awsBackendUrl = 'https://hazardnet-9yd2.onrender.com/api'; // Render backup
   
-  // Current active backend
-  static String _currentBackendUrl = laptopBackendUrl;
-  static BackendType _currentBackendType = BackendType.laptop;
+  // Current active backend - START WITH RAILWAY (instant connection)
+  static String _currentBackendUrl = railwayBackendUrl;
+  static BackendType _currentBackendType = BackendType.railway;
   
   /// Get current backend URL
   static String get baseApiUrl => _currentBackendUrl;
