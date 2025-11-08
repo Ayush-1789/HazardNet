@@ -4,12 +4,11 @@ class AppConstants {
   static const String appName = 'HazardNet';
   static const String appVersion = '1.0.0';
   
-  // API Configuration
-  // TODO: Replace with your actual backend URL after deploying the backend
-  // For local development on same PC: 'http://localhost:3000/api'
-  // For mobile device on same network: 'http://192.168.31.39:3000/api'
-  // For production: 'https://your-backend.vercel.app/api'
-  static const String baseApiUrl = 'http://192.168.31.39:3000/api';
+  // API Configuration - Smart Dual Backend System
+  // Primary: Laptop (http://192.168.31.39:3000/api)
+  // Fallback: AWS Cloud (automatically switches if laptop is off)
+  // Use ApiConfig.getAvailableBackendUrl() for automatic failover
+  static const String baseApiUrl = 'http://192.168.31.39:3000/api'; // Default to laptop
   
   // Authentication Endpoints
   static const String authLoginEndpoint = '/auth/login';
