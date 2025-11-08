@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class ApiConfig {
   // Backend URLs - Priority Order
   static const String laptopBackendUrl = 'http://192.168.31.39:3000/api';
-  static const String railwayBackendUrl = 'https://hazardnet-production.up.railway.app/api';
+  static const String railwayBackendUrl = 'https://hazardnet-9yd2.onrender.com/api';
   static const String awsBackendUrl = 'https://your-aws-url.com/api'; // Will be updated after AWS deployment
   
   // Current active backend
