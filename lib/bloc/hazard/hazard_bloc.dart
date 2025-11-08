@@ -2,12 +2,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:event_safety_app/models/hazard_model.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
+import 'package:event_safety_app/data/services/hazard_api_service.dart';
 import 'hazard_event.dart';
 import 'hazard_state.dart';
 
 /// BLoC for managing hazard detection and reporting
 class HazardBloc extends Bloc<HazardEvent, HazardState> {
   final Uuid _uuid = const Uuid();
+  final HazardApiService _hazardService = HazardApiService();
   List<HazardModel> _allHazards = [];
   
   HazardBloc() : super(HazardInitial()) {
@@ -29,11 +31,18 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
     try {
       emit(HazardLoading());
       
-      // TODO: Replace with actual API call
-      // For now, using mock data
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      _allHazards = _generateMockHazards();
+      // Fetch hazards from API
+      if (event.userLocation != null) {
+        // Get nearby hazards based on user location
+        _allHazards = await _hazardService.getNearbyHazards(
+          latitude: event.userLocation!.latitude,
+          longitude: event.userLocation!.longitude,
+          radiusKm: AppConstants.proximityRadiusMeters / 1000, // Convert to km
+        );
+      } else {
+        // Get all hazards
+        _allHazards = await _hazardService.getAllHazards();
+      }
       
       // Filter nearby hazards if user location provided
       List<HazardModel> nearbyHazards = [];
@@ -96,13 +105,21 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
     try {
       emit(HazardSubmitting());
       
-      // TODO: Submit to API with blurred image
-      await Future.delayed(const Duration(seconds: 1));
+      // Submit hazard to API
+      final submittedHazard = await _hazardService.reportHazard(
+        type: event.hazard.type,
+        latitude: event.hazard.latitude,
+        longitude: event.hazard.longitude,
+        severity: event.hazard.severity,
+        confidence: event.hazard.confidence,
+        imageUrl: event.hazard.imageUrl,
+        description: event.hazard.description,
+      );
       
       // Add to local list
-      _allHazards.add(event.hazard);
+      _allHazards.add(submittedHazard);
       
-      emit(HazardSubmitted(event.hazard));
+      emit(HazardSubmitted(submittedHazard));
       
       // Return to loaded state
       emit(HazardLoaded(hazards: _allHazards));
@@ -116,6 +133,9 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
     Emitter<HazardState> emit,
   ) async {
     try {
+      // Submit verification to API
+      await _hazardService.verifyHazard(event.hazardId);
+      
       // Find hazard and increment verification count
       final index = _allHazards.indexWhere((h) => h.id == event.hazardId);
       if (index != -1) {
@@ -126,9 +146,6 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
         );
         
         _allHazards[index] = updatedHazard;
-        
-        // TODO: Submit verification to API
-        await Future.delayed(const Duration(milliseconds: 300));
         
         emit(HazardLoaded(hazards: _allHazards));
       }

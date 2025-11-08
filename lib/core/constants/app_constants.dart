@@ -4,11 +4,44 @@ class AppConstants {
   static const String appName = 'HazardNet';
   static const String appVersion = '1.0.0';
   
-  // API Configuration (Mock endpoints for MVP - will be replaced with actual API)
-  static const String baseApiUrl = 'https://api.hazardnet.com/v1';
-  static const String hazardDetectionEndpoint = '/detect/hazard';
+  // API Configuration - Smart Dual Backend System
+  // Primary: Laptop (http://192.168.31.39:3000/api)
+  // Fallback: AWS Cloud (automatically switches if laptop is off)
+  // Use ApiConfig.getAvailableBackendUrl() for automatic failover
+  static const String baseApiUrl = 'http://192.168.31.39:3000/api'; // Default to laptop
+  
+  // Authentication Endpoints
+  static const String authLoginEndpoint = '/auth/login';
+  static const String authRegisterEndpoint = '/auth/register';
+  static const String authLogoutEndpoint = '/auth/logout';
+  static const String authCheckEndpoint = '/auth/check';
+  
+  // Hazard Endpoints
+  static const String hazardsEndpoint = '/hazards';
+  static const String nearbyHazardsEndpoint = '/hazards/nearby';
+  static const String verifyHazardEndpoint = '/hazards/:id/verify';
+  static const String reportHazardEndpoint = '/hazards/report';
+  
+  // Alert Endpoints
   static const String alertsEndpoint = '/alerts';
-  static const String userEndpoint = '/user';
+  static const String markAlertReadEndpoint = '/alerts/:id/read';
+  
+  // User Endpoints
+  static const String userProfileEndpoint = '/users/profile';
+  static const String updateDamageScoreEndpoint = '/users/damage-score';
+  static const String userStatsEndpoint = '/users/stats';
+  
+  // Trip Endpoints
+  static const String startTripEndpoint = '/trips/start';
+  static const String endTripEndpoint = '/trips/end';
+  static const String tripHistoryEndpoint = '/trips/history';
+  
+  // Sensor Data Endpoint
+  static const String sensorDataEndpoint = '/sensor-data';
+  
+  // ML Model Endpoint (separate service)
+  static const String mlApiUrl = 'http://localhost:5000';
+  static const String hazardDetectionEndpoint = '/detect/hazard';
   
   // Hazard Detection Settings
   static const double confidenceThreshold = 0.65; // Minimum confidence for hazard detection

@@ -1,0 +1,99 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║          🚨 IMPORTANT: READ BEFORE USING MOBILE APP 🚨       ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────┐
+│  ⚠️  YOUR LAPTOP MUST BE ON AND RUNNING THE BACKEND SERVER   │
+│      WHENEVER YOU USE THE MOBILE APP!                        │
+└──────────────────────────────────────────────────────────────┘
+
+
+📋 WHAT YOU NEED TO DO EVERY TIME:
+═══════════════════════════════════════════════════════════════
+
+✅ STEP 1: Turn on your laptop
+✅ STEP 2: Connect laptop to WiFi (same network as your phone)
+✅ STEP 3: Double-click START_BACKEND.bat
+✅ STEP 4: Keep the backend window open (DO NOT CLOSE IT!)
+✅ STEP 5: Now open HazardNet app on your phone
+
+
+⚡ WHY YOUR LAPTOP MUST BE RUNNING:
+═══════════════════════════════════════════════════════════════
+
+Your mobile app connects to: http://192.168.31.39:3000/api
+
+This is YOUR LAPTOP'S IP address!
+
+The backend server runs on your laptop and:
+  • Handles all API requests
+  • Connects to database
+  • Processes hazard reports
+  • Sends alerts
+  • Manages user data
+
+
+❌ WHAT HAPPENS IF YOU CLOSE LAPTOP:
+═══════════════════════════════════════════════════════════════
+
+If you close laptop or stop backend:
+  ❌ Mobile app will show "Network error"
+  ❌ Cannot login
+  ❌ Cannot see hazards
+  ❌ Cannot report hazards
+  ❌ No alerts
+  ❌ All features STOP WORKING
+
+
+✅ QUICK CHECKLIST BEFORE USING APP:
+═══════════════════════════════════════════════════════════════
+
+□ Laptop is ON
+□ Laptop connected to WiFi
+□ Same WiFi as phone
+□ START_BACKEND.bat is running
+□ Backend window shows "Server running on http://192.168.31.39:3000"
+□ DO NOT close the backend window
+
+
+🔋 POWER SAVING TIPS:
+═══════════════════════════════════════════════════════════════
+
+To use mobile app for longer periods:
+
+1. Keep laptop plugged in to power
+2. Disable laptop sleep mode:
+   • Settings → System → Power & Sleep
+   • When plugged in, never sleep
+
+3. Don't close laptop lid (or set "Do nothing" when lid closes)
+
+
+📱 ALTERNATIVE (FUTURE):
+═══════════════════════════════════════════════════════════════
+
+To use app WITHOUT keeping laptop on:
+
+Option 1: Deploy backend to cloud server (Heroku, Railway, Render)
+Option 2: Use VPS (DigitalOcean, AWS, Azure)
+Option 3: Deploy to Vercel/Netlify
+
+Then update app_constants.dart with cloud URL instead of laptop IP.
+
+
+💡 REMEMBER:
+═══════════════════════════════════════════════════════════════
+
+Right now, your laptop is the server!
+
+Mobile app → WiFi → Laptop (192.168.31.39:3000) → Database
+
+Keep laptop on = App works ✅
+Turn off laptop = App stops ❌
+
+
+═══════════════════════════════════════════════════════════════
+           Press any key to close this message...
+═══════════════════════════════════════════════════════════════

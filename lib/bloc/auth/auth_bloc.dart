@@ -1,12 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:event_safety_app/models/user_model.dart';
+import 'package:event_safety_app/data/services/auth_api_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 /// BLoC for managing user authentication
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final Uuid _uuid = const Uuid();
+  final AuthApiService _authService = AuthApiService();
   UserModel? _currentUser;
   
   AuthBloc() : super(AuthInitial()) {
@@ -30,17 +32,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
-      // TODO: Check backend auth status (JWT token validation)
-      // For MVP, using mock authentication
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Check if user is already authenticated via stored token
+      final user = await _authService.checkAuthStatus();
       
-      if (_currentUser != null) {
-        emit(Authenticated(_currentUser!));
+      if (user != null) {
+        _currentUser = user;
+        emit(Authenticated(user));
       } else {
         emit(Unauthenticated());
       }
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(Unauthenticated());
     }
   }
   
@@ -51,21 +53,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
-      // TODO: Implement backend auth sign in (POST /api/auth/login)
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Mock user for MVP
-      _currentUser = UserModel(
-        id: _uuid.v4(),
+      // Call backend API for login
+      final user = await _authService.login(
         email: event.email,
-        displayName: event.email.split('@')[0],
-        createdAt: DateTime.now(),
-        vehicleType: 'car',
+        password: event.password,
       );
       
-      emit(Authenticated(_currentUser!));
+      _currentUser = user;
+      emit(Authenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError('Login failed: ${e.toString()}'));
     }
   }
   
@@ -76,21 +73,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
-      // TODO: Implement backend auth sign up (POST /api/auth/register)
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Mock user for MVP
-      _currentUser = UserModel(
-        id: _uuid.v4(),
+      // Call backend API for registration
+      final user = await _authService.register(
         email: event.email,
+        password: event.password,
         displayName: event.displayName ?? event.email.split('@')[0],
-        createdAt: DateTime.now(),
         vehicleType: event.vehicleType,
       );
       
-      emit(Authenticated(_currentUser!));
+      _currentUser = user;
+      emit(Authenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError('Registration failed: ${e.toString()}'));
     }
   }
   
@@ -150,8 +144,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
-      // TODO: Sign out from Firebase
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Call backend API to logout
+      await _authService.logout();
       
       _currentUser = null;
       emit(Unauthenticated());
@@ -206,17 +200,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(Authenticated(_currentUser!));
   }
   
-  void _onIncrementDamageScore(
+  Future<void> _onIncrementDamageScore(
     IncrementDamageScore event,
     Emitter<AuthState> emit,
-  ) {
+  ) async {
     if (_currentUser == null) return;
     
-    _currentUser = _currentUser!.copyWith(
-      cumulativeDamageScore: _currentUser!.cumulativeDamageScore + event.points,
-    );
-    
-    emit(Authenticated(_currentUser!));
+    try {
+      final newScore = _currentUser!.cumulativeDamageScore + event.points;
+      
+      // Update damage score via API
+      await _authService.updateDamageScore(newScore);
+      
+      _currentUser = _currentUser!.copyWith(
+        cumulativeDamageScore: newScore,
+      );
+      
+      emit(Authenticated(_currentUser!));
+    } catch (e) {
+      // If API call fails, emit error but keep current state
+      emit(AuthError('Failed to update damage score: ${e.toString()}'));
+      if (_currentUser != null) {
+        emit(Authenticated(_currentUser!));
+      }
+    }
   }
   
   void _onRecordMaintenanceCheck(

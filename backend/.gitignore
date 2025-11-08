@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+
+# Environment files
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Uploaded files (but keep directory structure)
+uploads/hazard-photos/*.jpg
+uploads/hazard-photos/*.jpeg
+uploads/hazard-photos/*.png
+uploads/hazard-photos/*.webp
+!uploads/hazard-photos/.gitkeep
+.vercel

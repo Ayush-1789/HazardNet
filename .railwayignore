@@ -1,0 +1,21 @@
+# Ignore Flutter/Dart files - only deploy backend
+pubspec.yaml
+pubspec.lock
+lib/
+test/
+android/
+ios/
+web/
+windows/
+linux/
+macos/
+.dart_tool/
+build/
+
+# Ignore documentation
+*.md
+docs/
+
+# Ignore git
+.git/
+.gitignore

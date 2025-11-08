@@ -1,0 +1,24 @@
+# HazardNet Database - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# PostgreSQL adapter for Python
+psycopg2-binary==2.9.9
+
+# Environment variable management
+python-dotenv==1.0.0
+
+# Optional: SQLAlchemy ORM (for backend API)
+# sqlalchemy==2.0.23
+
+# Optional: Alembic (for database migrations)
+# alembic==1.13.0
+
+# Optional: FastAPI (for backend REST API)
+# fastapi==0.109.0
+# uvicorn[standard]==0.27.0
+
+# Optional: Pydantic (data validation)
+# pydantic==2.5.3
+
+# Optional: Connection pooling
+# psycopg2-pool==1.1
