@@ -41,7 +41,8 @@ class ModelConfig {
   static const int MAX_DETECTIONS = 10;
   
   // Frame skipping for better FPS (buffer every Nth frame)
-  static const int FRAME_SKIP = 1; // Buffer every frame to maintain high temporal coverage
+  // Increasing this reduces CPU work per second and can improve FPS.
+  static const int FRAME_SKIP = 4; // Buffer every 4th frame by default
 
   // Lightweight pre-buffering cadence (store every Nth skipped frame)
   static const int PREBUFFER_EVERY_N = 0; // Disable pre-buffering to reduce overhead

@@ -34,6 +34,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   final Uuid _uuid = const Uuid();
   int _frameCount = 0;
   bool _isProcessingGyro = false;
+  bool _captureInProgress = false;
   DateTime? _lastFpsUpdate;
   int _framesProcessedSinceLastUpdate = 0;
 
@@ -144,8 +145,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       _framesProcessedSinceLastUpdate = 0;
     }
     
-    // Buffer every 3rd frame for 10-second lookback (gives ~100 frames at 30 FPS)
-    if (_frameCount % 3 != 0) return;
+  // Buffer every Nth frame for 10-second lookback (reduces per-frame work)
+  final int skip = ModelConfig.FRAME_SKIP <= 1 ? 1 : ModelConfig.FRAME_SKIP;
+  if (_frameCount % skip != 0) return;
     
     try {
       // Convert to JPEG with good quality for buffer (pothole needs to be visible)
@@ -276,6 +278,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   Future<void> _onCaptureImage(CaptureImage event, Emitter<CameraState> emit) async {
     if (state is! CameraReady || _controller == null) return;
+    if (_captureInProgress) return; // prevent re-entrancy / duplicate captures
+    _captureInProgress = true;
     try {
       final image = await _controller!.takePicture();
       if (state is CameraReady && !isClosed) {
@@ -283,6 +287,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       }
     } catch (e) {
       debugPrint('Failed to capture image: $e');
+    } finally {
+      _captureInProgress = false;
     }
   }
 
@@ -331,11 +337,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       
       // Update state with new controller
       if (state is CameraReady && !isClosed) {
+        // Clear any transient captured image path so UI doesn't re-show the last capture
         emit((state as CameraReady).copyWith(
           controller: newController,
           isDetecting: false,
           fps: 0.0,
           framesProcessed: 0,
+          clearCapturedImage: true,
         ));
       }
       
