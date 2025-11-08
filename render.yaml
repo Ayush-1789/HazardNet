@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: hazardnet-backend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_qD9xQKlUm1io@ep-purple-forest-a8zm9xmt-pooler.eastus2.azure.neon.tech/neondb?sslmode=require
+      - key: JWT_SECRET
+        value: hazardnet-secret-2024
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
