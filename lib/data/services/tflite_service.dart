@@ -316,20 +316,27 @@ class TFLiteService {
   Uint8List? convertCameraImageToJpeg(
     CameraImage cameraImage, {
     int quality = AppConstants.imageQuality,
+    bool forBuffering = false,
   }) {
     final img.Image? rgb = _convertYUV420ToImageFast(cameraImage);
     if (rgb == null) {
       return null;
     }
     img.Image processed = rgb;
-    final bool exceedsWidth = rgb.width > AppConstants.maxImageWidth;
-    final bool exceedsHeight = rgb.height > AppConstants.maxImageHeight;
+    
+    // For buffering, use much lower resolution to save CPU time
+    final int maxWidth = forBuffering ? 480 : AppConstants.maxImageWidth;
+    final int maxHeight = forBuffering ? 360 : AppConstants.maxImageHeight;
+    final int jpegQuality = forBuffering ? 40 : quality;
+    
+    final bool exceedsWidth = rgb.width > maxWidth;
+    final bool exceedsHeight = rgb.height > maxHeight;
     if (exceedsWidth || exceedsHeight) {
-      final double widthScale = AppConstants.maxImageWidth / rgb.width;
-      final double heightScale = AppConstants.maxImageHeight / rgb.height;
+      final double widthScale = maxWidth / rgb.width;
+      final double heightScale = maxHeight / rgb.height;
       final double scale = math.min(1.0, math.min(widthScale, heightScale));
-      final int targetWidth = (rgb.width * scale).round().clamp(1, AppConstants.maxImageWidth);
-      final int targetHeight = (rgb.height * scale).round().clamp(1, AppConstants.maxImageHeight);
+      final int targetWidth = (rgb.width * scale).round().clamp(1, maxWidth);
+      final int targetHeight = (rgb.height * scale).round().clamp(1, maxHeight);
       processed = img.copyResize(
         rgb,
         width: targetWidth,
@@ -337,7 +344,7 @@ class TFLiteService {
         interpolation: img.Interpolation.linear,
       );
     }
-    return Uint8List.fromList(img.encodeJpg(processed, quality: quality));
+    return Uint8List.fromList(img.encodeJpg(processed, quality: jpegQuality));
   }
 
   /// Convert CameraImage to img.Image with support for multiple formats

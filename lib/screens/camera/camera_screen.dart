@@ -37,13 +37,7 @@ class _CameraScreenState extends State<CameraScreen> {
     _cameraBloc.add(InitializeCamera());
     _locationBloc.add(StartLocationTracking());
     
-    // Auto-start detection after camera initializes
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() => _isDetecting = true);
-        _cameraBloc.add(StartDetection());
-      }
-    });
+    // DON'T auto-start detection - user must click the button
   }
 
   @override

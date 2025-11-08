@@ -82,9 +82,10 @@ class AppConstants {
   static const int maxStoredCaptures = 20; // Limit stored auto captures
   
   // Camera Settings
-  static const int imageQuality = 60;
-  static const int maxImageWidth = 960;
-  static const int maxImageHeight = 540;
+  // Increased defaults for better captured/buffered image quality. Be mindful of FPS impact.
+  static const int imageQuality = 85;
+  static const int maxImageWidth = 1280;
+  static const int maxImageHeight = 720;
   
   // Notification Settings
   static const String notificationChannelId = 'hazard_alerts';
