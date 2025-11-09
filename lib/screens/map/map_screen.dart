@@ -178,9 +178,11 @@ class _MapScreenState extends State<MapScreen> {
             // Google Maps with markers
             BlocBuilder<HazardBloc, HazardState>(
               builder: (context, hazardState) {
-                // Update markers when hazards change
+                // Update markers when hazards change - schedule after build
                 if (hazardState is HazardLoaded) {
-                  _updateMarkers(hazardState.hazards);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _updateMarkers(hazardState.hazards);
+                  });
                 }
                 
                 return GoogleMap(
