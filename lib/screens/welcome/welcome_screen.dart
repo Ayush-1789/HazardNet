@@ -76,15 +76,31 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Align(
                 alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: _onGetStarted,
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      onPressed: _onGetStarted,
+                      child: const Text(
+                        'Skip',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pushNamed('/login'),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

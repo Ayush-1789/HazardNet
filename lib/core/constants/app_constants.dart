@@ -7,16 +7,17 @@ class AppConstants {
   static const String appVersion = '1.0.0';
   
   // API Configuration - Smart Dual Backend System
-  // Primary: Laptop (http://192.168.31.39:3000/api)
+  // Primary: Laptop (http://10.193.102.33:3000/api)
   // Fallback: AWS Cloud (automatically switches if laptop is off)
   // Use ApiConfig.getAvailableBackendUrl() for automatic failover
-  static const String baseApiUrl = 'http://192.168.31.39:3000/api'; // Default to laptop
+  static const String baseApiUrl = 'http://10.193.102.33:3000/api'; // Default to laptop
   
-  // Authentication Endpoints
+  // Authentication Endpoints (match backend routes)
   static const String authLoginEndpoint = '/auth/login';
   static const String authRegisterEndpoint = '/auth/register';
   static const String authLogoutEndpoint = '/auth/logout';
-  static const String authCheckEndpoint = '/auth/check';
+  // Backend provides /auth/status and /auth/profile endpoints
+  static const String authCheckEndpoint = '/auth/status';
   
   // Hazard Endpoints
   static const String hazardsEndpoint = '/hazards';
@@ -28,9 +29,9 @@ class AppConstants {
   static const String alertsEndpoint = '/alerts';
   static const String markAlertReadEndpoint = '/alerts/:id/read';
   
-  // User Endpoints
-  static const String userProfileEndpoint = '/users/profile';
-  static const String updateDamageScoreEndpoint = '/users/damage-score';
+  // User / profile endpoints (served under /auth in backend)
+  static const String userProfileEndpoint = '/auth/profile';
+  static const String updateDamageScoreEndpoint = '/auth/damage-score';
   static const String userStatsEndpoint = '/users/stats';
   
   // Trip Endpoints

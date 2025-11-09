@@ -61,10 +61,16 @@ app.use((req, res) => {
 });
 
 const server = app.listen(PORT, HOST, () => {
+  const os = require('os');
+  const networkInterfaces = os.networkInterfaces();
+  const networkIP = Object.values(networkInterfaces)
+    .flat()
+    .find(info => info.family === 'IPv4' && !info.internal)?.address || 'Unknown';
+  
   console.log(`🚀 HazardNet API Server running on:`);
   console.log(`   Local:   http://localhost:${PORT}`);
-  console.log(`   Network: http://192.168.31.39:${PORT}`);
-  console.log(`📊 Health check: http://192.168.31.39:${PORT}/health`);
+  console.log(`   Network: http://${networkIP}:${PORT}`);
+  console.log(`📊 Health check: http://${networkIP}:${PORT}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📱 Mobile app can now connect!`);
 });

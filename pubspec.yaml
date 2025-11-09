@@ -25,13 +25,13 @@ dependencies:
   http: ^1.2.2
   dio: ^5.7.0
   
-  # Location Services
+  # Location Services & Maps
   geolocator: ^13.0.2
   geocoding: ^3.0.0
-  google_maps_flutter: ^2.9.0
-  flutter_polyline_points: ^2.1.0
-  flutter_map: ^7.0.2
-  latlong2: ^0.9.1
+  google_maps_flutter: ^2.9.0  # Google Maps integration
+  flutter_polyline_points: ^2.1.0  # For route polylines
+  # flutter_map: ^7.0.2  # Removed - switched to Google Maps
+  # latlong2: ^0.9.1  # Removed - not needed with Google Maps
   
   # Local Storage & Notifications
   flutter_local_notifications: ^18.0.1
