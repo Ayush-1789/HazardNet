@@ -7,11 +7,14 @@
 -- ================================================================
 -- SEED USERS
 -- ================================================================
+-- Password for all users: Test123!@#
+-- Bcrypt hash: $2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa
 
-INSERT INTO users (id, email, display_name, phone_number, vehicle_type, cumulative_damage_score, is_premium, total_hazards_reported, verified_reports, driver_profile, preferences) VALUES
+INSERT INTO users (id, email, password_hash, display_name, phone_number, vehicle_type, cumulative_damage_score, is_premium, total_hazards_reported, verified_reports, driver_profile, preferences) VALUES
 (
     '11111111-1111-1111-1111-111111111111',
     'ayush.sharma@hazardnet.com',
+    '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa',
     'Ayush Sharma',
     '+919876543210',
     'car',
@@ -25,6 +28,7 @@ INSERT INTO users (id, email, display_name, phone_number, vehicle_type, cumulati
 (
     '22222222-2222-2222-2222-222222222222',
     'priya.verma@gmail.com',
+    '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa',
     'Priya Verma',
     '+919123456789',
     'bike',
@@ -38,6 +42,7 @@ INSERT INTO users (id, email, display_name, phone_number, vehicle_type, cumulati
 (
     '33333333-3333-3333-3333-333333333333',
     'rahul.kumar@outlook.com',
+    '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa',
     'Rahul Kumar',
     '+919998887776',
     'auto',
@@ -51,6 +56,7 @@ INSERT INTO users (id, email, display_name, phone_number, vehicle_type, cumulati
 (
     '44444444-4444-4444-4444-444444444444',
     'sneha.patel@yahoo.com',
+    '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa',
     'Sneha Patel',
     '+918887776665',
     'car',
@@ -64,6 +70,7 @@ INSERT INTO users (id, email, display_name, phone_number, vehicle_type, cumulati
 (
     '55555555-5555-5555-5555-555555555555',
     'test.user@hazardnet.com',
+    '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa',
     'Test User',
     '+911234567890',
     'truck',

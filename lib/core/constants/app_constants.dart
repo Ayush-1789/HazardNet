@@ -6,11 +6,11 @@ class AppConstants {
   static const String appName = 'HazardNet';
   static const String appVersion = '1.0.0';
   
-  // API Configuration - Smart Dual Backend System
-  // Primary: Laptop (http://10.193.102.33:3000/api)
-  // Fallback: AWS Cloud (automatically switches if laptop is off)
-  // Use ApiConfig.getAvailableBackendUrl() for automatic failover
-  static const String baseApiUrl = 'http://10.193.102.33:3000/api'; // Default to laptop
+  // API Configuration - Using Local Backend Connected to Neon Database
+  // Railway: https://hazardnet-production.up.railway.app/api (Always online)
+  // Fallback: Render.com (https://hazardnet-9yd2.onrender.com/api)
+  // Local: http://192.168.31.39:3000/api (When laptop backend is running)
+  static const String baseApiUrl = 'http://192.168.31.39:3000/api'; // LOCAL backend → Neon DB for testing
   
   // Authentication Endpoints (match backend routes)
   static const String authLoginEndpoint = '/auth/login';

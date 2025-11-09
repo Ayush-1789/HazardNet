@@ -723,8 +723,30 @@ class _MapScreenState extends State<MapScreen> {
                     child: BlocBuilder<HazardBloc, HazardState>(
                       builder: (context, state) {
                         if (state is HazardLoading) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const CircularProgressIndicator(),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Loading nearby hazards...',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: isDark ? AppColors.grey300 : AppColors.grey700,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'First request may take 30-60s\n(server waking up)',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? AppColors.grey400 : AppColors.grey500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         }
 
@@ -733,12 +755,33 @@ class _MapScreenState extends State<MapScreen> {
                             return Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(24),
-                                child: Text(
-                                  'No hazards found nearby',
-                                  style: TextStyle(
-                                    color: isDark ? AppColors.grey400 : AppColors.grey500,
-                                    fontSize: 14,
-                                  ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline,
+                                      size: 48,
+                                      color: AppColors.secondaryGreen,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No hazards found nearby',
+                                      style: TextStyle(
+                                        color: isDark ? AppColors.grey300 : AppColors.grey700,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Great! Your area is clear.\nUse Camera tab to detect and report hazards.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: isDark ? AppColors.grey400 : AppColors.grey500,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
