@@ -45,10 +45,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     context.read<AuthBloc>().add(
           SignUpWithEmail(
-            name: name,
+            displayName: name,
             email: email,
             password: password,
-            phone: phone,
           ),
         );
   }
