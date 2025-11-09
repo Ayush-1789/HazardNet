@@ -101,3 +101,13 @@ class AppColors {
   static const Color cameraOverlay = Color(0x80000000); // 50% black
   static const Color detectionBox = Color(0xFFFFFF00); // Yellow
 }
+
+/// Small Color extension used across the app to apply alpha/opacity using
+/// a named parameter syntax `color.withValues(alpha: 0.5)` which was used
+/// widely in the UI codebase.
+extension ColorWithValues on Color {
+  /// Returns this color with the given [alpha] as opacity (0.0 - 1.0).
+  Color withValues({double alpha = 1.0}) {
+    return withOpacity(alpha.clamp(0.0, 1.0));
+  }
+}

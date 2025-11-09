@@ -12,6 +12,7 @@ import 'package:event_safety_app/bloc/location/location_event.dart';
 import 'package:event_safety_app/bloc/location/location_state.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_event.dart';
+import 'package:event_safety_app/bloc/hazard/hazard_state.dart';
 import 'package:event_safety_app/models/hazard_model.dart';
 import 'package:event_safety_app/models/captured_hazard_model.dart';
 import 'package:event_safety_app/models/location_model.dart';
@@ -73,71 +74,66 @@ class _CameraScreenState extends State<CameraScreen> {
       child: Scaffold(
         backgroundColor: Colors.black,
         body: BlocConsumer<CameraBloc, CameraState>(
-        listener: (context, state) {
-          if (state is CameraPermissionDenied) {
-            _showPermissionDialog();
-          }
-          if (state is CameraReady && state.capturedImagePath != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text('Image saved to ${state.capturedImagePath}'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-          }
-          if (state is CameraReady && state.lastCapturedHazardId != null) {
-            if (_lastAutoCaptureId != state.lastCapturedHazardId) {
-              _lastAutoCaptureId = state.lastCapturedHazardId;
+          listener: (context, state) {
+            if (state is CameraPermissionDenied) {
+              _showPermissionDialog();
+            }
+            if (state is CameraReady && state.capturedImagePath != null) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
-                  const SnackBar(
-                    content: Text('Gyroscope trigger captured a hazard clip'),
+                  SnackBar(
+                    content: Text('Image saved to ${state.capturedImagePath}'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
             }
-          }
-        },
-        builder: (context, state) {
-          // Only reinitialize on error, not on initial state to prevent loop
-          if (state is CameraError) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && state is CameraError) {
-                _cameraBloc.add(InitializeCamera());
+            if (state is CameraReady && state.lastCapturedHazardId != null) {
+              if (_lastAutoCaptureId != state.lastCapturedHazardId) {
+                _lastAutoCaptureId = state.lastCapturedHazardId;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text('Gyroscope trigger captured a hazard clip'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
               }
-            });
-          }
-          
-          if (state is CameraInitial || state is CameraLoading) {
+            }
+          },
+          builder: (context, state) {
+            // Only reinitialize on error, not on initial state to prevent loop
+            if (state is CameraError) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && state is CameraError) {
+                  _cameraBloc.add(InitializeCamera());
+                }
+              });
+            }
+
+            if (state is CameraInitial || state is CameraLoading) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primaryBlue,
+                ),
+              );
+            }
+
+            if (state is CameraPermissionDenied) return _buildPermissionDenied();
+
+            if (state is CameraError) return _buildError(state.message);
+
+            if (state is CameraReady) return _buildCameraView(state);
+
             return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryBlue,
+              child: Text(
+                'Initializing camera...',
+                style: TextStyle(color: Colors.white),
               ),
             );
-          }
-
-          if (state is CameraPermissionDenied) {
-            return _buildPermissionDenied();
-          }
-
-          if (state is CameraError) {
-            return _buildError(state.message);
-          }
-
-          if (state is CameraReady) {
-            return _buildCameraView(state);
-          }
-
-          return const Center(
-            child: Text(
-              'Initializing camera...',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
