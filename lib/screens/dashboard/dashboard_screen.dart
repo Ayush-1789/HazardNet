@@ -74,28 +74,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ]
               : null,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? activeIcon : inactiveIcon,
-              color: isSelected ? Colors.white : AppColors.grey500,
-              size: isSelected ? 26 : 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: isSelected ? 12 : 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? Colors.white : AppColors.grey600,
-                letterSpacing: 0.2,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isSelected ? activeIcon : inactiveIcon,
+                color: isSelected ? Colors.white : AppColors.grey500,
+                size: isSelected ? 26 : 24,
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: isSelected ? 12 : 11,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? Colors.white : AppColors.grey600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 
   @override
@@ -123,13 +127,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
-                _buildNavItem(1, Icons.explore_rounded, Icons.explore_outlined, 'Explore'),
-                _buildNavItem(2, Icons.qr_code_scanner_rounded, Icons.qr_code_scanner_outlined, 'Scan'),
-                _buildNavItem(3, Icons.notifications_rounded, Icons.notifications_outlined, 'Alerts'),
-                _buildNavItem(4, Icons.person_rounded, Icons.person_outline_rounded, 'Profile'),
+                Expanded(
+                  child: _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildNavItem(1, Icons.explore_rounded, Icons.explore_outlined, 'Explore'),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildNavItem(2, Icons.qr_code_scanner_rounded, Icons.qr_code_scanner_outlined, 'Scan'),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildNavItem(3, Icons.notifications_rounded, Icons.notifications_outlined, 'Alerts'),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildNavItem(4, Icons.person_rounded, Icons.person_outline_rounded, 'Profile'),
+                ),
               ],
             ),
           ),
@@ -658,7 +676,7 @@ class DashboardHomeScreen extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 14,
       crossAxisSpacing: 14,
-      childAspectRatio: 1.6,
+      childAspectRatio: 1.25,
       children: [
         _buildPremiumActionCard(
           title: 'Start Scan',
@@ -725,7 +743,6 @@ class DashboardHomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
@@ -739,11 +756,11 @@ class DashboardHomeScreen extends StatelessWidget {
                     size: 20,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Flexible(
+                const SizedBox(height: 8),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
                         title,
@@ -756,7 +773,7 @@ class DashboardHomeScreen extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: TextStyle(
