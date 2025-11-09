@@ -12,6 +12,7 @@ import 'package:event_safety_app/bloc/location/location_event.dart';
 import 'package:event_safety_app/bloc/location/location_state.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_event.dart';
+import 'package:event_safety_app/bloc/hazard/hazard_state.dart';
 import 'package:event_safety_app/models/hazard_model.dart';
 import 'package:event_safety_app/models/captured_hazard_model.dart';
 import 'package:event_safety_app/models/location_model.dart';
@@ -40,17 +41,17 @@ class _CameraScreenState extends State<CameraScreen> {
     // Store bloc references before widget tree changes
     _locationBloc = context.read<LocationBloc>();
     _cameraBloc = context.read<CameraBloc>();
-    
+
     // Start location tracking
     _locationBloc.add(StartLocationTracking());
-    
+
     // Initialize camera with delay to ensure proper context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _cameraBloc.add(InitializeCamera());
       }
     });
-    
+
     // DON'T auto-start detection - user must click the button
   }
 
@@ -73,87 +74,84 @@ class _CameraScreenState extends State<CameraScreen> {
       child: Scaffold(
         backgroundColor: Colors.black,
         body: BlocConsumer<CameraBloc, CameraState>(
-        listener: (context, state) {
-          if (state is CameraPermissionDenied) {
-            _showPermissionDialog();
-          }
-          if (state is CameraReady && state.capturedImagePath != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text('Image saved to ${state.capturedImagePath}'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-          }
-          if (state is CameraReady && state.lastCapturedHazardId != null) {
-            if (_lastAutoCaptureId != state.lastCapturedHazardId) {
-              _lastAutoCaptureId = state.lastCapturedHazardId;
+          listener: (context, state) {
+            if (state is CameraPermissionDenied) {
+              _showPermissionDialog();
+            }
+            if (state is CameraReady && state.capturedImagePath != null) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
-                  const SnackBar(
-                    content: Text('Gyroscope trigger captured a hazard clip'),
+                  SnackBar(
+                    content: Text('Image saved to ${state.capturedImagePath}'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
             }
-          }
-        },
-        builder: (context, state) {
-          // Only reinitialize on error, not on initial state to prevent loop
-          if (state is CameraError) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && state is CameraError) {
-                _cameraBloc.add(InitializeCamera());
+            if (state is CameraReady && state.lastCapturedHazardId != null) {
+              if (_lastAutoCaptureId != state.lastCapturedHazardId) {
+                _lastAutoCaptureId = state.lastCapturedHazardId;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text('Gyroscope trigger captured a hazard clip'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
               }
-            });
-          }
-          
-          if (state is CameraInitial || state is CameraLoading) {
+            }
+          },
+          builder: (context, state) {
+            // Only reinitialize on error, not on initial state to prevent loop
+            if (state is CameraError) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && state is CameraError) {
+                  _cameraBloc.add(InitializeCamera());
+                }
+              });
+            }
+
+            if (state is CameraInitial || state is CameraLoading) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryBlue),
+              );
+            }
+
+            if (state is CameraPermissionDenied) {
+              return _buildPermissionDenied();
+            }
+
+            if (state is CameraError) {
+              return _buildError(state.message);
+            }
+
+            if (state is CameraReady) {
+              return _buildCameraView(state);
+            }
+
             return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryBlue,
+              child: Text(
+                'Initializing camera...',
+                style: TextStyle(color: Colors.white),
               ),
             );
-          }
-
-          if (state is CameraPermissionDenied) {
-            return _buildPermissionDenied();
-          }
-
-          if (state is CameraError) {
-            return _buildError(state.message);
-          }
-
-          if (state is CameraReady) {
-            return _buildCameraView(state);
-          }
-
-          return const Center(
-            child: Text(
-              'Initializing camera...',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
 
   Widget _buildCameraView(CameraReady state) {
     final controller = state.controller;
-    
+
     // Ensure controller is fully initialized before showing preview
     if (!controller.value.isInitialized) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primaryBlue,
-        ),
+        child: CircularProgressIndicator(color: AppColors.primaryBlue),
       );
     }
-    
+
     final previewSize = controller.value.previewSize ?? const Size(640, 480);
 
     return Stack(
@@ -177,10 +175,7 @@ class _CameraScreenState extends State<CameraScreen> {
         if (_isDetecting)
           Container(
             decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.secondaryGreen,
-                width: 3,
-              ),
+              border: Border.all(color: AppColors.secondaryGreen, width: 3),
             ),
           ),
 
@@ -208,8 +203,8 @@ class _CameraScreenState extends State<CameraScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: _isDetecting
-                            ? AppColors.secondaryGreen.withValues(alpha:0.9)
-                            : AppColors.grey800.withValues(alpha:0.7),
+                            ? AppColors.secondaryGreen.withValues(alpha: 0.9)
+                            : AppColors.grey800.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -219,7 +214,9 @@ class _CameraScreenState extends State<CameraScreen> {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: _isDetecting ? Colors.white : AppColors.grey400,
+                              color: _isDetecting
+                                  ? Colors.white
+                                  : AppColors.grey400,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -250,7 +247,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha:0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Column(
@@ -266,8 +263,8 @@ class _CameraScreenState extends State<CameraScreen> {
                               _StatItem(
                                 label: 'Detections',
                                 value: '${state.detections.length}',
-                                valueColor: state.detections.isNotEmpty 
-                                    ? AppColors.severityHigh 
+                                valueColor: state.detections.isNotEmpty
+                                    ? AppColors.severityHigh
                                     : Colors.white,
                               ),
                               _StatItem(
@@ -307,7 +304,9 @@ class _CameraScreenState extends State<CameraScreen> {
                               });
 
                               if (_isDetecting) {
-                                context.read<CameraBloc>().add(StartDetection());
+                                context.read<CameraBloc>().add(
+                                  StartDetection(),
+                                );
                               } else {
                                 context.read<CameraBloc>().add(StopDetection());
                               }
@@ -327,10 +326,11 @@ class _CameraScreenState extends State<CameraScreen> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (_isDetecting
-                                            ? AppColors.error
-                                            : AppColors.primaryBlue)
-                                        .withValues(alpha:0.5),
+                                    color:
+                                        (_isDetecting
+                                                ? AppColors.error
+                                                : AppColors.primaryBlue)
+                                            .withValues(alpha: 0.5),
                                     blurRadius: 20,
                                     offset: const Offset(0, 4),
                                   ),
@@ -466,11 +466,7 @@ class _CameraScreenState extends State<CameraScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.camera_alt_outlined,
-              size: 80,
-              color: AppColors.grey400,
-            ),
+            Icon(Icons.camera_alt_outlined, size: 80, color: AppColors.grey400),
             const SizedBox(height: 24),
             const Text(
               'Camera Permission Required',
@@ -485,10 +481,7 @@ class _CameraScreenState extends State<CameraScreen> {
             Text(
               'Please grant camera permission to detect road hazards',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.grey400,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.grey400),
             ),
             const SizedBox(height: 32),
             ElevatedButton(
@@ -510,11 +503,7 @@ class _CameraScreenState extends State<CameraScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: AppColors.error,
-            ),
+            Icon(Icons.error_outline, size: 80, color: AppColors.error),
             const SizedBox(height: 24),
             const Text(
               'Camera Error',
@@ -528,10 +517,7 @@ class _CameraScreenState extends State<CameraScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.grey400,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.grey400),
             ),
           ],
         ),
@@ -557,7 +543,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.black.withValues(alpha:0.9),
+      backgroundColor: Colors.black.withValues(alpha: 0.9),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -581,16 +567,17 @@ class _CameraScreenState extends State<CameraScreen> {
                 Text(
                   'Captured Hazards',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: captures.length,
-                    separatorBuilder: (_, __) => const Divider(color: Colors.white10),
+                    separatorBuilder: (_, __) =>
+                        const Divider(color: Colors.white10),
                     itemBuilder: (context, index) {
                       final hazard = captures[index];
                       final file = File(hazard.imagePath);
@@ -598,15 +585,24 @@ class _CameraScreenState extends State<CameraScreen> {
                       final detectionLabel = hazard.detections.isNotEmpty
                           ? '${hazard.detections.first.label} ${(hazard.detections.first.confidence * 100).toStringAsFixed(0)}%'
                           : 'No detections';
-                      final impactRaw = hazard.sensorSnapshot['impact_magnitude'];
-                      final impact = impactRaw is num ? impactRaw.toDouble() : null;
+                      final impactRaw =
+                          hazard.sensorSnapshot['impact_magnitude'];
+                      final impact = impactRaw is num
+                          ? impactRaw.toDouble()
+                          : null;
                       final latitudeRaw = hazard.locationSnapshot?['latitude'];
-                      final longitudeRaw = hazard.locationSnapshot?['longitude'];
-                      final latitude = latitudeRaw is num ? latitudeRaw.toDouble() : null;
-                      final longitude = longitudeRaw is num ? longitudeRaw.toDouble() : null;
+                      final longitudeRaw =
+                          hazard.locationSnapshot?['longitude'];
+                      final latitude = latitudeRaw is num
+                          ? latitudeRaw.toDouble()
+                          : null;
+                      final longitude = longitudeRaw is num
+                          ? longitudeRaw.toDouble()
+                          : null;
                       final subtitleParts = <String>[
                         formatter.format(hazard.timestamp.toLocal()),
-                        if (impact != null) 'Impact ${impact.toStringAsFixed(2)} rad/s',
+                        if (impact != null)
+                          'Impact ${impact.toStringAsFixed(2)} rad/s',
                         if (latitude != null && longitude != null)
                           'Lat ${latitude.toStringAsFixed(4)}, Lng ${longitude.toStringAsFixed(4)}',
                       ];
@@ -630,21 +626,35 @@ class _CameraScreenState extends State<CameraScreen> {
                                   width: 56,
                                   height: 56,
                                   color: Colors.white12,
-                                  child: const Icon(Icons.image_not_supported, color: Colors.white54),
+                                  child: const Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.white54,
+                                  ),
                                 ),
                         ),
                         title: Text(
                           detectionLabel,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         subtitle: Text(
                           subtitle,
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
                         ),
                         trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.white70),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.white70,
+                          ),
                           onPressed: () {
-                            context.read<CameraBloc>().add(DeleteCapturedHazard(hazard.id));
+                            context.read<CameraBloc>().add(
+                              DeleteCapturedHazard(hazard.id),
+                            );
                             Navigator.of(context).pop();
                           },
                         ),
@@ -682,7 +692,10 @@ class _CameraScreenState extends State<CameraScreen> {
                     height: 200,
                     alignment: Alignment.center,
                     color: Colors.white12,
-                    child: const Text('Image not available', style: TextStyle(color: Colors.white54)),
+                    child: const Text(
+                      'Image not available',
+                      style: TextStyle(color: Colors.white54),
+                    ),
                   ),
                 const SizedBox(height: 16),
                 if (hazard.detections.isNotEmpty)
@@ -693,13 +706,19 @@ class _CameraScreenState extends State<CameraScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Text(
                           '${detection.label} • ${(detection.confidence * 100).toStringAsFixed(1)}%',
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
                       );
                     }).toList(),
                   )
                 else
-                  const Text('No detections recorded', style: TextStyle(color: Colors.white70)),
+                  const Text(
+                    'No detections recorded',
+                    style: TextStyle(color: Colors.white70),
+                  ),
                 const SizedBox(height: 8),
                 Text(
                   'Captured at ${DateFormat('MMM d, HH:mm:ss').format(hazard.timestamp.toLocal())}',
@@ -769,7 +788,9 @@ class _CameraScreenState extends State<CameraScreen> {
       if (locationState is! LocationLoaded) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Location not available. Please enable location services.'),
+            content: Text(
+              'Location not available. Please enable location services.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -820,10 +841,12 @@ class _CameraScreenState extends State<CameraScreen> {
       );
 
       // Submit hazard with image path for upload
-      context.read<HazardBloc>().add(SubmitHazardWithImage(
-        hazard: hazardToSubmit,
-        imagePath: capturedHazard.imagePath,
-      ));
+      context.read<HazardBloc>().add(
+        SubmitHazardWithImage(
+          hazard: hazardToSubmit,
+          imagePath: capturedHazard.imagePath,
+        ),
+      );
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -886,10 +909,7 @@ class _CircleButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
 
-  const _CircleButton({
-    required this.icon,
-    required this.onPressed,
-  });
+  const _CircleButton({required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -898,14 +918,10 @@ class _CircleButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha:0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
-        ),
+        child: Icon(icon, color: Colors.white, size: 24),
       ),
     );
   }
@@ -933,22 +949,15 @@ class _ActionButton extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.grey800.withValues(alpha:0.8),
+              color: AppColors.grey800.withValues(alpha: 0.8),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
       ),
@@ -962,11 +971,7 @@ class _StatItem extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  const _StatItem({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _StatItem({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {
@@ -982,13 +987,7 @@ class _StatItem extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.grey400,
-            fontSize: 12,
-          ),
-        ),
+        Text(label, style: TextStyle(color: AppColors.grey400, fontSize: 12)),
       ],
     );
   }
