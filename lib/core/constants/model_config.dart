@@ -6,14 +6,14 @@ class ModelConfig {
   // 🔧 CHANGE THIS TO SWAP MODELS
   // ============================================
   // unified_hazards_int8.tflite was detecting potholes at 36.9% with 70ms inference
-  static const String modelFilename = 'unified_hazards_int8.tflite';
+  static const String MODEL_FILENAME = 'unified_hazards_int8.tflite';
   
   // ============================================
   // Model path (automatically constructed)
   // ============================================
   // The models are stored under the `detection_models/` folder in this repo.
   // Keep this in sync with `flutter` assets declared in `pubspec.yaml`.
-  static const String modelPath = 'detection_models/$modelFilename';
+  static const String MODEL_PATH = 'detection_models/$MODEL_FILENAME';
   
   // ============================================
   // Model Input/Output Configuration
