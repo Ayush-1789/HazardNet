@@ -15,6 +15,10 @@ import 'package:event_safety_app/bloc/location/location_event.dart';
 import 'package:event_safety_app/bloc/location/location_state.dart';
 import 'package:event_safety_app/bloc/auth/auth_bloc.dart';
 import 'package:event_safety_app/bloc/auth/auth_state.dart';
+import 'package:event_safety_app/data/services/alert_notification_service.dart';
+import 'package:event_safety_app/data/services/elevenlabs_tts_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:math' show cos, sqrt, asin;
 
 /// Map screen showing hazards and user location using Google Maps
 class MapScreen extends StatefulWidget {
@@ -32,6 +36,12 @@ class _MapScreenState extends State<MapScreen> {
   MapType _currentMapType = MapType.normal;
   bool _locationTrackingStarted = false;
   List<String> _lastHazardIds = []; // Track which hazards we've already rendered
+  
+  // TTS for voice alerts
+  ElevenLabsTTSService? _ttsService;
+  final Set<String> _announcedHazards = {}; // Track which hazards have been announced
+  Timer? _hazardCheckTimer;
+  String _selectedLanguage = 'en'; // Default language
 
   @override
   void initState() {
@@ -48,11 +58,27 @@ class _MapScreenState extends State<MapScreen> {
     if (authState is Authenticated) {
       _currentUserId = authState.user.id;
     }
+    
+    // Initialize TTS service if API key is available
+    final apiKey = dotenv.env['ELEVENLABS_API_KEY'];
+    if (apiKey != null && apiKey.isNotEmpty) {
+      _ttsService = ElevenLabsTTSService(apiKey: apiKey);
+      debugPrint('✅ [MAP] TTS service initialized');
+    } else {
+      debugPrint('⚠️ [MAP] ElevenLabs API key not found - TTS disabled');
+    }
+    
+    // Start periodic hazard checking (every 5 seconds while navigating)
+    _hazardCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _checkNearbyHazards();
+    });
   }
 
   @override
   void dispose() {
     _mapController?.dispose();
+    _ttsService?.dispose();
+    _hazardCheckTimer?.cancel();
     super.dispose();
   }
 
@@ -237,6 +263,162 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  /// Calculate distance between two coordinates in kilometers
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const p = 0.017453292519943295; // Math.PI / 180
+    final a = 0.5 -
+        cos((lat2 - lat1) * p) / 2 +
+        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
+  }
+
+  /// Check for nearby hazards and announce via TTS
+  void _checkNearbyHazards() {
+    if (_currentLocation == null || _ttsService == null) return;
+    
+    final hazardState = context.read<HazardBloc>().state;
+    if (hazardState is! HazardLoaded) return;
+    
+    final hazards = hazardState.hazards;
+    
+    for (var hazard in hazards) {
+      // Skip if already announced
+      if (_announcedHazards.contains(hazard.id)) continue;
+      
+      // Calculate distance
+      final distance = _calculateDistance(
+        _currentLocation!.latitude,
+        _currentLocation!.longitude,
+        hazard.latitude,
+        hazard.longitude,
+      );
+      
+      // Announce if within 500 meters (0.5 km)
+      if (distance <= 0.5) {
+        _announceHazard(hazard, distance);
+        _announcedHazards.add(hazard.id);
+        
+        // Remove from announced set after 5 minutes
+        Future.delayed(const Duration(minutes: 5), () {
+          _announcedHazards.remove(hazard.id);
+        });
+      }
+    }
+  }
+
+  /// Announce hazard via TTS
+  Future<void> _announceHazard(dynamic hazard, double distance) async {
+    if (_ttsService == null) return;
+    
+    // Get hazard type message
+    final Map<String, Map<String, String>> messages = {
+      'en': {
+        'pothole': 'Caution! Pothole ahead',
+        'speed_breaker': 'Speed breaker ahead, slow down',
+        'speed_breaker_unmarked': 'Warning! Unmarked speed breaker ahead',
+        'obstacle': 'Obstacle detected on road',
+        'closed_road': 'Road closed ahead, find alternate route',
+        'lane_blocked': 'Lane blocked ahead',
+        'water_logging': 'Water logging ahead, drive carefully',
+        'animal_crossing': 'Animal crossing area, be alert',
+        'debris': 'Debris on road ahead',
+        'construction': 'Construction work ahead',
+      },
+      'hi': {
+        'pothole': 'सावधान! आगे गड्ढा है',
+        'speed_breaker': 'स्पीड ब्रेकर आगे है, धीमे चलें',
+        'speed_breaker_unmarked': 'चेतावनी! आगे बिना निशान वाला स्पीड ब्रेकर',
+        'obstacle': 'सड़क पर रुकावट',
+        'closed_road': 'सड़क बंद है, वैकल्पिक मार्ग खोजें',
+        'lane_blocked': 'लेन बंद है',
+        'water_logging': 'आगे जल जमाव, सावधानी से चलें',
+        'animal_crossing': 'जानवर क्रॉसिंग क्षेत्र, सतर्क रहें',
+        'debris': 'आगे सड़क पर मलबा',
+        'construction': 'आगे निर्माण कार्य',
+      },
+    };
+    
+    final languageMessages = messages[_selectedLanguage] ?? messages['en']!;
+    String message = languageMessages[hazard.type] ?? 'Hazard ahead';
+    
+    // Add distance information
+    final distanceMeters = (distance * 1000).round();
+    if (_selectedLanguage == 'hi') {
+      message = '$message, $distanceMeters मीटर आगे';
+    } else {
+      message = '$message, $distanceMeters meters ahead';
+    }
+    
+    // Add severity warning for critical hazards
+    if (hazard.severity == 'high' || hazard.severity == 'critical') {
+      if (_selectedLanguage == 'hi') {
+        message = 'अत्यावश्यक! $message';
+      } else {
+        message = 'URGENT! $message';
+      }
+    }
+    
+    debugPrint('🔊 [MAP] Announcing: $message');
+    
+    // Speak the message
+    await _ttsService!.speak(message, languageCode: _selectedLanguage);
+    
+    // Show visual alert too
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                _getHazardIcon(hazard.type),
+                color: Colors.white,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: hazard.severity == 'high' || hazard.severity == 'critical'
+              ? AppColors.error
+              : AppColors.warning,
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  /// Get icon for hazard type
+  IconData _getHazardIcon(String type) {
+    switch (type) {
+      case 'pothole':
+        return Icons.report_problem;
+      case 'speed_breaker':
+      case 'speed_breaker_unmarked':
+        return Icons.speed;
+      case 'obstacle':
+        return Icons.block;
+      case 'closed_road':
+        return Icons.do_not_disturb;
+      case 'lane_blocked':
+        return Icons.warning;
+      case 'water_logging':
+        return Icons.water_drop;
+      case 'animal_crossing':
+        return Icons.pets;
+      case 'debris':
+        return Icons.cleaning_services;
+      case 'construction':
+        return Icons.construction;
+      default:
+        return Icons.warning;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -245,6 +427,33 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         title: const Text('Hazard Map'),
         actions: [
+          // TTS Language Selector
+          if (_ttsService != null)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.language),
+              tooltip: 'Voice Language',
+              onSelected: (String language) {
+                setState(() {
+                  _selectedLanguage = language;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Voice language: ${language == 'en' ? 'English' : 'हिंदी'}'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'en',
+                  child: Text('🇬🇧 English'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'hi',
+                  child: Text('🇮🇳 हिंदी (Hindi)'),
+                ),
+              ],
+            ),
           IconButton(
             icon: Icon(_currentMapType == MapType.normal 
                 ? Icons.satellite 
@@ -368,7 +577,6 @@ class _MapScreenState extends State<MapScreen> {
                     target: _currentLocation ?? const LatLng(28.6139, 77.2090), // Default to Delhi
                     zoom: 15.0,
                   ),
-                  style: isDark ? _darkMapStyle : null,  // Apply dark mode style directly
                   mapType: _currentMapType,
                   markers: _markers,
                   // Only enable myLocation layer after we have a current location (and thus permissions)
@@ -589,23 +797,6 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
-  }
-
-  // Get hazard icon based on type
-  IconData _getHazardIcon(String type) {
-    switch (type) {
-      case 'pothole':
-        return Icons.crisis_alert;
-      case 'speed_breaker':
-      case 'speed_breaker_unmarked':
-        return Icons.speed;
-      case 'obstacle':
-        return Icons.block;
-      case 'closed_road':
-        return Icons.do_not_disturb_on;
-      default:
-        return Icons.warning;
-    }
   }
 
   // Show hazard details in bottom sheet
