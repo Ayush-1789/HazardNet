@@ -48,6 +48,19 @@ class SubmitHazard extends HazardEvent {
   List<Object> get props => [hazard];
 }
 
+class SubmitHazardWithImage extends HazardEvent {
+  final HazardModel hazard;
+  final String imagePath;
+  
+  const SubmitHazardWithImage({
+    required this.hazard,
+    required this.imagePath,
+  });
+  
+  @override
+  List<Object> get props => [hazard, imagePath];
+}
+
 class VerifyHazard extends HazardEvent {
   final String hazardId;
   final LocationModel userLocation;

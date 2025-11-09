@@ -125,7 +125,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   Future<void> _onProcessFrame(ProcessFrame event, Emitter<CameraState> emit) async {
     if (!_isDetecting || !_imageStreamActive) return;
-    
+
     _frameCount++;
     _framesProcessedSinceLastUpdate++;
     
@@ -152,14 +152,22 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   if (_frameCount % skip != 0) return;
     
     try {
-      // Convert to JPEG with good quality for buffer (pothole needs to be visible)
-      final jpegBytes = _tfliteService.convertCameraImageToJpeg(
-        event.imageData,
-        quality: AppConstants.imageQuality,  // Use configured higher quality
-        forBuffering: false, // store full-resolution buffer frames
-      );
+      Uint8List? jpegBytes;
+
+      // If the stream callback already converted to JPEG bytes, we receive Uint8List
+      if (event.imageData is Uint8List) {
+        jpegBytes = event.imageData as Uint8List;
+      } else {
+        // Fallback: convert CameraImage to JPEG (older callers)
+        jpegBytes = _tfliteService.convertCameraImageToJpeg(
+          event.imageData,
+          quality: AppConstants.imageQuality,
+          forBuffering: false,
+        );
+      }
+
       if (jpegBytes == null) return;
-      
+
       _frameBuffer.add(_BufferedFrame(bytes: jpegBytes, timestamp: now));
       _pruneBuffer();
     } catch (_) {}
@@ -404,9 +412,26 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   Future<void> _startImageStream() async {
     if (_imageStreamActive || _controller == null) return;
     try {
+      // Convert camera frames to lightweight JPEG bytes inside the stream callback
+      // so we don't pass CameraImage objects across async event boundaries which
+      // can hold native buffers and lead to ImageReader 'maxImages' errors.
       await _controller!.startImageStream((image) {
-        // ignore: void_checks
-        add(ProcessFrame(image));
+        try {
+          // Synchronously convert CameraImage to small JPEG for detection buffer
+          final jpeg = _tfliteService.convertCameraImageToJpeg(
+            image,
+            quality: AppConstants.imageQuality,
+            forBuffering: true,
+          );
+
+          if (jpeg != null) {
+            // Post the jpeg bytes to the bloc for processing (much lighter)
+            // ignore: void_checks
+            add(ProcessFrame(jpeg));
+          }
+        } catch (_) {
+          // Swallow conversion errors to avoid crashing the stream
+        }
       });
       _imageStreamActive = true;
     } catch (e) {

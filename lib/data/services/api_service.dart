@@ -150,6 +150,56 @@ class ApiService {
     }
   }
 
+  /// Upload file with multipart form data
+  Future<Map<String, dynamic>> uploadFile(
+    String endpoint, {
+    required String filePath,
+    required String fieldName,
+    Map<String, String>? additionalFields,
+  }) async {
+    try {
+      final uri = Uri.parse('${AppConstants.baseApiUrl}$endpoint');
+      
+      print('🌐 [API-UPLOAD] Request to: $uri');
+      print('📁 [API-UPLOAD] File: $filePath');
+      print('🔑 [API-UPLOAD] Has auth token: ${_authToken != null}');
+      
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Add headers (excluding Content-Type as multipart sets it automatically)
+      final headers = <String, String>{};
+      if (_authToken != null) {
+        headers['Authorization'] = 'Bearer $_authToken';
+      }
+      request.headers.addAll(headers);
+      
+      // Add file
+      final file = await http.MultipartFile.fromPath(
+        fieldName,
+        filePath,
+      );
+      request.files.add(file);
+      
+      // Add additional fields if provided
+      if (additionalFields != null) {
+        request.fields.addAll(additionalFields);
+      }
+      
+      final startTime = DateTime.now();
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      final duration = DateTime.now().difference(startTime);
+      
+      print('📥 [API-UPLOAD] Response received in ${duration.inMilliseconds}ms');
+      print('📊 [API-UPLOAD] Status: ${response.statusCode}');
+      
+      return _handleResponse(response);
+    } catch (e) {
+      print('❌ [API-UPLOAD] Error: ${e.toString()}');
+      throw _handleError(e);
+    }
+  }
+
   /// Handle HTTP response
   Map<String, dynamic> _handleResponse(http.Response response) {
     final statusCode = response.statusCode;

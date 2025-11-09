@@ -11,6 +11,24 @@ class HazardApiService {
   HazardApiService({ApiService? apiService})
       : _apiService = apiService ?? ApiService();
 
+  /// Upload hazard image and return the image URL
+  Future<String> uploadHazardImage(String hazardId, String imagePath) async {
+    final response = await _apiService.uploadFile(
+      '/gamification/$hazardId/photos',
+      filePath: imagePath,
+      fieldName: 'photos',
+    );
+
+    // Extract the first photo URL from the response
+    final photos = response['photos'] as List<dynamic>;
+    if (photos.isEmpty) {
+      throw Exception('No photo URL returned from server');
+    }
+    
+    final photoUrl = photos[0]['photo_url'] as String;
+    return photoUrl;
+  }
+
   /// Report a new hazard
   Future<HazardModel> reportHazard({
     required String type,

@@ -368,7 +368,6 @@ class _MapScreenState extends State<MapScreen> {
                     target: _currentLocation ?? const LatLng(28.6139, 77.2090), // Default to Delhi
                     zoom: 15.0,
                   ),
-                  style: isDark ? _darkMapStyle : null,  // Apply dark mode style directly
                   mapType: _currentMapType,
                   markers: _markers,
                   // Only enable myLocation layer after we have a current location (and thus permissions)
