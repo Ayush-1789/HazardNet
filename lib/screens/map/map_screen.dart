@@ -18,7 +18,8 @@ import 'package:event_safety_app/bloc/auth/auth_state.dart';
 import 'package:event_safety_app/data/services/alert_notification_service.dart';
 import 'package:event_safety_app/data/services/elevenlabs_tts_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:math' show cos, sqrt, asin;
+import 'dart:math' as math;
+import 'package:event_safety_app/models/hazard_model.dart';
 
 /// Map screen showing hazards and user location using Google Maps
 class MapScreen extends StatefulWidget {
@@ -31,6 +32,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
   LatLng? _currentLocation;
+  double? _currentHeading;
   String? _currentUserId;
   final Set<Marker> _markers = {};
   MapType _currentMapType = MapType.normal;
@@ -42,6 +44,9 @@ class _MapScreenState extends State<MapScreen> {
   final Set<String> _announcedHazards = {}; // Track which hazards have been announced
   Timer? _hazardCheckTimer;
   String _selectedLanguage = 'en'; // Default language
+  List<_UpcomingHazardInfo> _upcomingHazards = [];
+  static const double _aheadAngleThresholdDegrees = 35.0;
+  static const double _maxAheadDistanceMeters = 800.0;
 
   @override
   void initState() {
@@ -265,44 +270,191 @@ class _MapScreenState extends State<MapScreen> {
 
   /// Calculate distance between two coordinates in kilometers
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const p = 0.017453292519943295; // Math.PI / 180
+    const p = math.pi / 180;
     final a = 0.5 -
-        cos((lat2 - lat1) * p) / 2 +
-        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
+    return 12742 * math.asin(math.sqrt(a)); // 2 * R; R = 6371 km
+  }
+
+  double _bearingBetween(double lat1, double lon1, double lat2, double lon2) {
+    final phi1 = lat1 * math.pi / 180;
+    final phi2 = lat2 * math.pi / 180;
+    final deltaLon = (lon2 - lon1) * math.pi / 180;
+    final y = math.sin(deltaLon) * math.cos(phi2);
+    final x = math.cos(phi1) * math.sin(phi2) -
+        math.sin(phi1) * math.cos(phi2) * math.cos(deltaLon);
+    return (math.atan2(y, x) * 180 / math.pi + 360) % 360;
+  }
+
+  double _bearingDifference(double heading, double bearing) {
+    double diff = (bearing - heading + 540) % 360 - 180;
+    return diff.abs();
+  }
+
+  Widget _buildUpcomingHazardsBanner(bool isDark) {
+    final ahead = _upcomingHazards.take(3).toList();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.grey50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.navigation,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Hazards ahead',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.white : AppColors.grey900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...ahead.map((info) {
+            final hazard = info.hazard;
+            final distance = info.distanceMeters.clamp(0, double.infinity);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color:
+                          _getSeverityColor(hazard.severity).withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.route,
+                      color: _getSeverityColor(hazard.severity),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hazard.typeName,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.white : AppColors.grey900,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${distance.toStringAsFixed(0)} m • ${hazard.severityText}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? AppColors.grey400 : AppColors.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    'Δ${info.bearingDifference.toStringAsFixed(0)}°',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 
   /// Check for nearby hazards and announce via TTS
   void _checkNearbyHazards() {
-    if (_currentLocation == null || _ttsService == null) return;
+    if (_currentLocation == null) return;
+    final heading = _currentHeading;
+    if (heading == null) {
+      if (_upcomingHazards.isNotEmpty && mounted) {
+        setState(() => _upcomingHazards = []);
+      }
+      return;
+    }
     
     final hazardState = context.read<HazardBloc>().state;
     if (hazardState is! HazardLoaded) return;
     
-    final hazards = hazardState.hazards;
+    final List<_UpcomingHazardInfo> ahead = [];
     
-    for (var hazard in hazards) {
-      // Skip if already announced
-      if (_announcedHazards.contains(hazard.id)) continue;
-      
-      // Calculate distance
-      final distance = _calculateDistance(
+    for (var hazard in hazardState.hazards) {
+      final distanceKm = _calculateDistance(
         _currentLocation!.latitude,
         _currentLocation!.longitude,
         hazard.latitude,
         hazard.longitude,
       );
+      final distanceMeters = distanceKm * 1000;
+      if (distanceMeters > _maxAheadDistanceMeters) continue;
       
-      // Announce if within 500 meters (0.5 km)
-      if (distance <= 0.5) {
-        _announceHazard(hazard, distance);
+      final bearing = _bearingBetween(
+        _currentLocation!.latitude,
+        _currentLocation!.longitude,
+        hazard.latitude,
+        hazard.longitude,
+      );
+      final diff = _bearingDifference(heading, bearing);
+      if (diff > _aheadAngleThresholdDegrees) continue;
+      
+      ahead.add(_UpcomingHazardInfo(
+        hazard: hazard,
+        distanceMeters: distanceMeters,
+        bearingDifference: diff,
+      ));
+      
+      if (_ttsService != null &&
+          distanceMeters <= 500 &&
+          !_announcedHazards.contains(hazard.id)) {
+        _announceHazard(hazard, distanceKm);
         _announcedHazards.add(hazard.id);
-        
-        // Remove from announced set after 5 minutes
         Future.delayed(const Duration(minutes: 5), () {
           _announcedHazards.remove(hazard.id);
         });
       }
+    }
+    
+    ahead.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+    if (mounted) {
+      setState(() {
+        _upcomingHazards = ahead;
+      });
     }
   }
 
@@ -500,6 +652,7 @@ class _MapScreenState extends State<MapScreen> {
                     state.location.latitude,
                     state.location.longitude,
                   );
+                  _currentHeading = state.location.heading;
                 });
                 // Center map on user location when first loaded
                 if (_currentLocation != null && _mapController != null) {
@@ -683,40 +836,47 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     // Handle bar
                     Container(
-                    margin: const EdgeInsets.symmetric(vertical: 12),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.grey300,
-                      borderRadius: BorderRadius.circular(2),
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.grey300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
 
-                  // Title
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Nearby Hazards',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.white : AppColors.grey900,
+                    if (_upcomingHazards.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildUpcomingHazardsBanner(isDark),
+                      ),
+                    if (_upcomingHazards.isNotEmpty) const SizedBox(height: 12),
+
+                    // Title
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Nearby Hazards',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppColors.white : AppColors.grey900,
+                            ),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            context.read<HazardBloc>().add(RefreshHazards());
-                          },
-                          child: const Text('Refresh'),
-                        ),
-                      ],
+                          TextButton(
+                            onPressed: () {
+                              context.read<HazardBloc>().add(RefreshHazards());
+                            },
+                            child: const Text('Refresh'),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const Divider(height: 1),
+                    const Divider(height: 1),
 
                   // Hazard list
                   Expanded(
@@ -1106,6 +1266,18 @@ class _MapScreenState extends State<MapScreen> {
       return '${difference.inDays}d ago';
     }
   }
+}
+
+class _UpcomingHazardInfo {
+  final HazardModel hazard;
+  final double distanceMeters;
+  final double bearingDifference;
+
+  const _UpcomingHazardInfo({
+    required this.hazard,
+    required this.distanceMeters,
+    required this.bearingDifference,
+  });
 }
 
 /// Hazard list item widget
