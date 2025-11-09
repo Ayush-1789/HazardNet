@@ -9,6 +9,10 @@ import 'package:event_safety_app/bloc/camera/camera_event.dart';
 import 'package:event_safety_app/bloc/camera/camera_state.dart';
 import 'package:event_safety_app/bloc/location/location_bloc.dart';
 import 'package:event_safety_app/bloc/location/location_event.dart';
+import 'package:event_safety_app/bloc/location/location_state.dart';
+import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
+import 'package:event_safety_app/bloc/hazard/hazard_event.dart';
+import 'package:event_safety_app/models/hazard_model.dart';
 import 'package:event_safety_app/models/captured_hazard_model.dart';
 import 'package:event_safety_app/widgets/bounding_box_overlay.dart';
 
@@ -42,8 +46,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   void dispose() {
-    // Stop detection and location tracking using stored references
-    _cameraBloc.add(StopDetection());
+    // Properly dispose camera controller to prevent memory leaks
+    _cameraBloc.add(DisposeCameraEvent());
     _locationBloc.add(StopLocationTracking());
     super.dispose();
   }
@@ -82,6 +86,16 @@ class _CameraScreenState extends State<CameraScreen> {
           }
         },
         builder: (context, state) {
+          // Reinitialize camera if needed (after disposal or error)
+          if (state is CameraInitial || state is CameraError) {
+            // Trigger immediate reinitialization 
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                _cameraBloc.add(InitializeCamera());
+              }
+            });
+          }
+          
           if (state is CameraLoading) {
             return const Center(
               child: CircularProgressIndicator(
@@ -599,9 +613,30 @@ class _CameraScreenState extends State<CameraScreen> {
                     style: const TextStyle(color: Colors.white60, fontSize: 12),
                   ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white24,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Close'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _submitHazardToBackend(hazard);
+                      },
+                      icon: const Icon(Icons.cloud_upload),
+                      label: const Text('Submit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryBlue,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -609,6 +644,92 @@ class _CameraScreenState extends State<CameraScreen> {
         );
       },
     );
+  }
+
+  void _submitHazardToBackend(CapturedHazardModel capturedHazard) async {
+    try {
+      // Get current location
+      final locationState = context.read<LocationBloc>().state;
+      if (locationState is! LocationLoaded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location not available. Please enable location services.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Extract location from captured hazard or use current location
+      double latitude = locationState.location.latitude;
+      double longitude = locationState.location.longitude;
+
+      if (capturedHazard.locationSnapshot != null) {
+        final latRaw = capturedHazard.locationSnapshot!['latitude'];
+        final lngRaw = capturedHazard.locationSnapshot!['longitude'];
+        if (latRaw is num && lngRaw is num) {
+          latitude = latRaw.toDouble();
+          longitude = lngRaw.toDouble();
+        }
+      }
+
+      // Get the primary detection (highest confidence)
+      if (capturedHazard.detections.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No hazard detected in this capture'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      final primaryDetection = capturedHazard.detections.reduce(
+        (a, b) => a.confidence > b.confidence ? a : b,
+      );
+
+      // Build a HazardModel and submit via HazardBloc
+      final hazardToSubmit = HazardModel(
+        id: capturedHazard.id,
+        type: primaryDetection.label,
+        latitude: latitude,
+        longitude: longitude,
+        severity: _determineSeverity(primaryDetection.confidence),
+        confidence: primaryDetection.confidence,
+        detectedAt: capturedHazard.timestamp,
+        // We don't have a public image URL yet; the API service may accept image upload separately.
+        imageUrl: null,
+        description: null,
+        metadata: capturedHazard.sensorSnapshot,
+      );
+
+      context.read<HazardBloc>().add(SubmitHazard(hazardToSubmit));
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Submitting ${primaryDetection.label} to backend...'),
+          backgroundColor: AppColors.primaryBlue,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Delete the local capture after submission
+      context.read<CameraBloc>().add(DeleteCapturedHazard(capturedHazard.id));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit hazard: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  String _determineSeverity(double confidence) {
+    if (confidence >= 0.8) return 'high';
+    if (confidence >= 0.6) return 'medium';
+    return 'low';
   }
 
   void _showPermissionDialog() {

@@ -22,59 +22,44 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     Emitter<LocationState> emit,
   ) async {
     try {
+      print('📍 [LOCATION] Starting location tracking...');
       emit(LocationLoading());
-      
-      // Check if location services are enabled
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        emit(LocationServiceDisabled());
-        return;
-      }
-      
-      // Check permissions
+
+      // Check permissions first (so we trigger runtime permission dialog if needed)
       LocationPermission permission = await Geolocator.checkPermission();
+      print('📍 [LOCATION] Current permission: $permission');
       if (permission == LocationPermission.denied) {
+        print('📍 [LOCATION] Requesting permission...');
         permission = await Geolocator.requestPermission();
+        print('📍 [LOCATION] Permission after request: $permission');
         if (permission == LocationPermission.denied) {
+          print('❌ [LOCATION] Permission denied');
           emit(LocationPermissionDenied());
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
+        print('❌ [LOCATION] Permission denied forever');
         emit(LocationPermissionDenied());
         return;
       }
+
+      // Now check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      print('📍 [LOCATION] Service enabled: $serviceEnabled');
+      if (!serviceEnabled) {
+        print('❌ [LOCATION] Location service is disabled');
+        emit(LocationServiceDisabled());
+        return;
+      }
+
+      print('✅ [LOCATION] Permissions granted and service enabled, getting position...');
       
-      // Start listening to position stream
-      const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
-      );
-      
-      _positionStreamSubscription = Geolocator.getPositionStream(
-        locationSettings: locationSettings,
-      ).listen(
-        (Position position) {
-          final location = LocationModel(
-            latitude: position.latitude,
-            longitude: position.longitude,
-            altitude: position.altitude,
-            accuracy: position.accuracy,
-            speed: position.speed,
-            heading: position.heading,
-            timestamp: position.timestamp ?? DateTime.now(),
-          );
-          
-          emit(LocationLoaded(location: location, isTracking: true));
-        },
-        onError: (error) {
-          emit(LocationError(error.toString()));
-        },
-      );
-      
-      // Get initial position
+      // Get initial position first
+      print('📍 [LOCATION] Getting initial position...');
       Position position = await Geolocator.getCurrentPosition();
+      print('✅ [LOCATION] Initial position: ${position.latitude}, ${position.longitude}');
       final location = LocationModel(
         latitude: position.latitude,
         longitude: position.longitude,
@@ -86,7 +71,33 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
       );
       
       emit(LocationLoaded(location: location, isTracking: true));
+      
+      // Start listening to position stream (dispatch UpdateLocation events instead of emitting directly)
+      const LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // Update every 10 meters
+      );
+      
+      _positionStreamSubscription = Geolocator.getPositionStream(
+        locationSettings: locationSettings,
+      ).listen(
+        (Position position) {
+          print('📍 [LOCATION] Stream update: ${position.latitude}, ${position.longitude}');
+          // Use event dispatch instead of direct emit to avoid "emit after completion" error
+          add(UpdateLocation(
+            latitude: position.latitude,
+            longitude: position.longitude,
+            speed: position.speed,
+            heading: position.heading,
+          ));
+        },
+        onError: (error) {
+          print('❌ [LOCATION] Stream error: $error');
+          // Don't emit here - stream errors should not stop the bloc
+        },
+      );
     } catch (e) {
+      print('❌ [LOCATION] Error: $e');
       emit(LocationError(e.toString()));
     }
   }
@@ -155,12 +166,19 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     Emitter<LocationState> emit,
   ) async {
     try {
+      print('📍 [LOCATION] Requesting runtime permission (via RequestLocationPermission event)');
       LocationPermission permission = await Geolocator.requestPermission();
-      
-      if (permission == LocationPermission.denied || 
+
+      print('📍 [LOCATION] Permission result: $permission');
+
+      if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         emit(LocationPermissionDenied());
+        return;
       }
+
+      // If permission granted, attempt to start tracking
+      add(StartLocationTracking());
     } catch (e) {
       emit(LocationError(e.toString()));
     }

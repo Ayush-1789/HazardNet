@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:bloc/bloc.dart';
@@ -6,6 +7,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:camera/camera.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:event_safety_app/bloc/camera/camera_event.dart';
 import 'package:event_safety_app/bloc/camera/camera_state.dart';
 import 'package:event_safety_app/bloc/location/location_bloc.dart';
@@ -282,8 +284,41 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     _captureInProgress = true;
     try {
       final image = await _controller!.takePicture();
+      String finalImagePath = image.path;
+      
+      // If there are current detections visible, save an annotated version
+      final currentState = state as CameraReady;
+      if (currentState.detections.isNotEmpty) {
+        try {
+          // Read the captured image
+          final imageFile = File(image.path);
+          final imageBytes = await imageFile.readAsBytes();
+          
+          // Draw bounding boxes on the image
+          final annotatedBytes = _tfliteService.drawDetectionsOnJpeg(
+            imageBytes,
+            currentState.detections,
+          );
+          
+          if (annotatedBytes != null) {
+            // Save the annotated image
+            final timestamp = DateTime.now().millisecondsSinceEpoch;
+            final directory = await getApplicationDocumentsDirectory();
+            final annotatedPath = '${directory.path}/annotated_$timestamp.jpg';
+            
+            final annotatedFile = File(annotatedPath);
+            await annotatedFile.writeAsBytes(annotatedBytes);
+            
+            finalImagePath = annotatedPath;
+            debugPrint('📸 Saved annotated image with ${currentState.detections.length} detection(s): $annotatedPath');
+          }
+        } catch (e) {
+          debugPrint('❌ Failed to create annotated image, using original: $e');
+        }
+      }
+      
       if (state is CameraReady && !isClosed) {
-        emit((state as CameraReady).copyWith(capturedImagePath: image.path));
+        emit((state as CameraReady).copyWith(capturedImagePath: finalImagePath));
       }
     } catch (e) {
       debugPrint('Failed to capture image: $e');
@@ -359,7 +394,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
   }
 
-  Future<void> _onDisposeCamera(DisposeCameraEvent event, Emitter<CameraState> emit) async => await _shutdownController();
+  Future<void> _onDisposeCamera(DisposeCameraEvent event, Emitter<CameraState> emit) async {
+    await _shutdownController();
+    if (!isClosed) {
+      emit(CameraInitial());
+    }
+  }
 
   Future<void> _startImageStream() async {
     if (_imageStreamActive || _controller == null) return;

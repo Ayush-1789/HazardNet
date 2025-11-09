@@ -83,13 +83,15 @@ class HazardModel extends Equatable {
   /// Create model from JSON
   factory HazardModel.fromJson(Map<String, dynamic> json) {
     return HazardModel(
-      id: json['id'] as String,
-      type: json['type'] as String,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      severity: json['severity'] as String,
-      confidence: (json['confidence'] as num).toDouble(),
-      detectedAt: DateTime.parse(json['detected_at'] as String),
+      id: json['id']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'unknown',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      severity: json['severity']?.toString() ?? 'medium',
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+      detectedAt: json['detected_at'] != null 
+          ? DateTime.parse(json['detected_at'] as String) 
+          : DateTime.now(),
       imageUrl: json['image_url'] as String?,
       description: json['description'] as String?,
       verificationCount: json['verification_count'] as int? ?? 1,

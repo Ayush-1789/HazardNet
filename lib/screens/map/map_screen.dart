@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:event_safety_app/core/theme/app_colors.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
+import 'package:event_safety_app/core/utils/map_marker_generator.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_event.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_state.dart';
@@ -27,13 +30,18 @@ class _MapScreenState extends State<MapScreen> {
   String? _currentUserId;
   final Set<Marker> _markers = {};
   MapType _currentMapType = MapType.normal;
+  bool _locationTrackingStarted = false;
+  List<String> _lastHazardIds = []; // Track which hazards we've already rendered
 
   @override
   void initState() {
     super.initState();
     // Load hazards and start location tracking
     context.read<HazardBloc>().add(const LoadHazards());
-    context.read<LocationBloc>().add(StartLocationTracking());
+    if (!_locationTrackingStarted) {
+      context.read<LocationBloc>().add(StartLocationTracking());
+      _locationTrackingStarted = true;
+    }
     
     // Get current user ID
     final authState = context.read<AuthBloc>().state;
@@ -152,44 +160,81 @@ class _MapScreenState extends State<MapScreen> {
     await _mapController!.setMapStyle(darkMapStyle);
   }
 
-  void _updateMarkers(List<dynamic> hazards) {
-    setState(() {
-      _markers.clear();
+  /// Update markers on the map with custom circular icons
+  Future<void> _updateMarkers(List<dynamic> hazards) async {
+    // Check if hazards have actually changed
+    final currentHazardIds = hazards.map((h) => h.id as String).toList()..sort();
+    final lastIds = List<String>.from(_lastHazardIds)..sort();
+    
+    if (listEquals(currentHazardIds, lastIds)) {
+      // Hazards haven't changed, skip update
+      return;
+    }
+    
+    if (kDebugMode) debugPrint('🗺️ [MAP] Updating ${hazards.length} markers on map');
+    
+    // Update tracking
+    _lastHazardIds = currentHazardIds;
+    
+    // Keep user location marker
+    final userLocationMarker = _markers.firstWhere(
+      (m) => m.markerId.value == 'user_location',
+      orElse: () => const Marker(markerId: MarkerId('none')),
+    );
+    
+    // Create a new set to hold all markers
+    final Set<Marker> newMarkers = {};
+    
+    // Re-add user location marker if it exists
+    if (userLocationMarker.markerId.value != 'none' && _currentLocation != null) {
+      newMarkers.add(userLocationMarker);
+    }
 
-      // Add user location marker
-      if (_currentLocation != null) {
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('user_location'),
-            position: _currentLocation!,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: const InfoWindow(title: 'Your Location'),
+    // Add hazard markers with custom circular icons
+    for (var hazard in hazards) {
+      final isCurrentUser = hazard.reportedBy == _currentUserId;
+      
+      // User's reports = Orange, Others' reports = Blue
+      final markerColor = isCurrentUser 
+          ? AppColors.accentOrange  // User's own hazards
+          : AppColors.primaryBlue;  // Other users' hazards
+
+      // Get appropriate icon for hazard type
+      final hazardIcon = MapMarkerGenerator.getHazardIcon(hazard.type);
+
+      // Generate custom circular marker
+      final markerIcon = await MapMarkerGenerator.generateCircularMarker(
+        icon: hazardIcon,
+        color: markerColor,
+        size: 100,
+        iconColor: Colors.white,
+        isVerified: hazard.isVerified,
+      );
+
+      newMarkers.add(
+        Marker(
+          markerId: MarkerId(hazard.id),
+          position: LatLng(hazard.latitude, hazard.longitude),
+          icon: markerIcon,
+          infoWindow: InfoWindow(
+            title: hazard.typeName,
+            snippet: hazard.isVerified 
+                ? '✓ Verified by ${hazard.verificationCount} user${hazard.verificationCount > 1 ? "s" : ""}'
+                : 'Reported by ${hazard.reportedByName ?? "Anonymous"}',
           ),
-        );
-      }
-
-      // Add hazard markers
-      for (var hazard in hazards) {
-        final isCurrentUser = hazard.reportedBy == _currentUserId;
-        final hue = isCurrentUser 
-            ? BitmapDescriptor.hueBlue  // User's own hazards
-            : BitmapDescriptor.hueOrange; // Other users' hazards
-
-        _markers.add(
-          Marker(
-            markerId: MarkerId(hazard.id),
-            position: LatLng(hazard.latitude, hazard.longitude),
-            icon: BitmapDescriptor.defaultMarkerWithHue(hue),
-            infoWindow: InfoWindow(
-              title: hazard.typeName,
-              snippet: hazard.isVerified ? '✓ Verified' : 'Unverified',
-              onTap: () => _showHazardDetails(hazard),
-            ),
-            onTap: () => _showHazardDetails(hazard),
-          ),
-        );
-      }
-    });
+          onTap: () => _showHazardDetails(hazard),
+        ),
+      );
+    }
+    
+    // Update markers atomically - replace all at once
+    if (mounted) {
+      setState(() {
+        _markers
+          ..clear()
+          ..addAll(newMarkers);
+      });
+    }
   }
 
   @override
@@ -226,36 +271,95 @@ class _MapScreenState extends State<MapScreen> {
                 _mapController!.animateCamera(
                   CameraUpdate.newLatLngZoom(_currentLocation!, 15),
                 );
+              } else {
+                // Try requesting permission and starting location tracking
+                context.read<LocationBloc>().add(RequestLocationPermission());
               }
             },
           ),
         ],
       ),
-      body: BlocListener<LocationBloc, LocationState>(
-        listener: (context, state) {
-          if (state is LocationLoaded) {
-            setState(() {
-              _currentLocation = LatLng(
-                state.location.latitude,
-                state.location.longitude,
-              );
-            });
-            // Center map on user location when first loaded
-            if (_currentLocation != null && _mapController != null) {
-              _mapController!.animateCamera(
-                CameraUpdate.newLatLngZoom(_currentLocation!, 15),
-              );
-            }
-          }
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<LocationBloc, LocationState>(
+            listener: (context, state) {
+              if (kDebugMode) debugPrint('🗺️ [MAP] Location state changed: ${state.runtimeType}');
+              if (state is LocationLoaded) {
+                if (kDebugMode) debugPrint('🗺️ [MAP] Location loaded: ${state.location.latitude}, ${state.location.longitude}');
+                setState(() {
+                  _currentLocation = LatLng(
+                    state.location.latitude,
+                    state.location.longitude,
+                  );
+                });
+                // Center map on user location when first loaded
+                if (_currentLocation != null && _mapController != null) {
+                  if (kDebugMode) debugPrint('🗺️ [MAP] Centering map on user location');
+                  _mapController!.animateCamera(
+                    CameraUpdate.newLatLngZoom(_currentLocation!, 15),
+                  );
+                }
+              } else if (state is LocationPermissionDenied) {
+                if (kDebugMode) debugPrint('❌ [MAP] Location permission denied');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Location permission is required to show your position'),
+                    action: SnackBarAction(label: 'Settings', onPressed: Geolocator.openLocationSettings),
+                  ),
+                );
+              } else if (state is LocationServiceDisabled) {
+                if (kDebugMode) debugPrint('❌ [MAP] Location service disabled');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enable location services'),
+                    action: SnackBarAction(label: 'Settings', onPressed: Geolocator.openLocationSettings),
+                  ),
+                );
+              } else if (state is LocationError) {
+                if (kDebugMode) debugPrint('❌ [MAP] Location error: ${state.message}');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Location error: ${state.message}')),
+                );
+              }
+            },
+          ),
+          // Listen for hazard submissions and refresh map
+          BlocListener<HazardBloc, HazardState>(
+            listener: (context, state) {
+              if (kDebugMode) debugPrint('🗺️ [MAP] Hazard state changed: ${state.runtimeType}');
+              if (state is HazardSubmitted) {
+                if (kDebugMode) debugPrint('🗺️ [MAP] ✅ Hazard submitted: ${state.hazard.type}, refreshing map...');
+                // Refresh hazards to show newly submitted one
+                context.read<HazardBloc>().add(const LoadHazards());
+                
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${state.hazard.typeName} reported successfully!'),
+                    backgroundColor: AppColors.secondaryGreen,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else if (state is HazardLoaded) {
+                if (kDebugMode) debugPrint('🗺️ [MAP] ✅ Hazards loaded: ${state.hazards.length} total');
+              } else if (state is HazardSubmitting) {
+                if (kDebugMode) debugPrint('🗺️ [MAP] ⏳ Submitting hazard...');
+              }
+            },
+          ),
+        ],
         child: Stack(
           children: [
             // Google Maps with markers
             BlocBuilder<HazardBloc, HazardState>(
               builder: (context, hazardState) {
-                // Update markers when hazards change
+                // Update markers when hazards change (deferred to post-frame)
                 if (hazardState is HazardLoaded) {
-                  _updateMarkers(hazardState.hazards);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      _updateMarkers(hazardState.hazards);
+                    }
+                  });
                 }
                 
                 return GoogleMap(
@@ -266,7 +370,8 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   mapType: _currentMapType,
                   markers: _markers,
-                  myLocationEnabled: true,
+                  // Only enable myLocation layer after we have a current location (and thus permissions)
+                  myLocationEnabled: _currentLocation != null,
                   myLocationButtonEnabled: false, // We have our own button
                   compassEnabled: true,
                   mapToolbarEnabled: false,
@@ -308,7 +413,7 @@ class _MapScreenState extends State<MapScreen> {
                           width: 12,
                           height: 12,
                           decoration: const BoxDecoration(
-                            color: AppColors.primaryBlue,
+                            color: AppColors.accentOrange,  // User's reports = Orange
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -331,7 +436,7 @@ class _MapScreenState extends State<MapScreen> {
                           width: 12,
                           height: 12,
                           decoration: const BoxDecoration(
-                            color: AppColors.accentOrange,
+                            color: AppColors.primaryBlue,  // Others' reports = Blue
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -451,7 +556,7 @@ class _MapScreenState extends State<MapScreen> {
           ],
         ),
       ),
-    );
+    ); // end of Scaffold
   }
 
   // Show dialog to add a new hazard at the given location

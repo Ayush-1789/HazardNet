@@ -63,7 +63,9 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
         hazards: _allHazards,
         nearbyHazards: nearbyHazards,
       ));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ [HAZARD-BLOC] LoadHazards error: $e');
+      print('❌ [HAZARD-BLOC] Stack trace: $stackTrace');
       emit(HazardError(e.toString()));
     }
   }
@@ -121,8 +123,8 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
       
       emit(HazardSubmitted(submittedHazard));
       
-      // Return to loaded state
-      emit(HazardLoaded(hazards: _allHazards));
+      // Don't emit HazardLoaded here - let the listener trigger LoadHazards
+      // This ensures the HazardSubmitted state is properly observed
     } catch (e) {
       emit(HazardError(e.toString()));
     }
