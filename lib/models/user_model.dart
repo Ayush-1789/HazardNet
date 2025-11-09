@@ -72,23 +72,26 @@ class UserModel extends Equatable {
   }
   
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Handle both camelCase (from backend API) and snake_case (from DB)
     return UserModel(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      displayName: json['display_name'] as String?,
-      phoneNumber: json['phone_number'] as String?,
-      photoUrl: json['photo_url'] as String?,
-      vehicleType: json['vehicle_type'] as String? ?? 'car',
-      cumulativeDamageScore: json['cumulative_damage_score'] as int? ?? 0,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      lastMaintenanceCheck: json['last_maintenance_check'] != null 
-          ? DateTime.parse(json['last_maintenance_check'] as String) 
+      id: (json['id'] ?? '').toString(),
+      email: (json['email'] ?? '').toString(),
+      displayName: (json['displayName'] ?? json['display_name'])?.toString(),
+      phoneNumber: (json['phoneNumber'] ?? json['phone_number'])?.toString(),
+      photoUrl: (json['photoUrl'] ?? json['photo_url'])?.toString(),
+      vehicleType: (json['vehicleType'] ?? json['vehicle_type'])?.toString() ?? 'car',
+      cumulativeDamageScore: (json['cumulativeDamageScore'] ?? json['cumulative_damage_score'] ?? 0) as int,
+      createdAt: json['createdAt'] != null || json['created_at'] != null
+          ? DateTime.parse((json['createdAt'] ?? json['created_at']).toString())
+          : DateTime.now(),
+      lastMaintenanceCheck: json['lastMaintenanceCheck'] != null || json['last_maintenance_check'] != null
+          ? DateTime.parse((json['lastMaintenanceCheck'] ?? json['last_maintenance_check']).toString())
           : null,
-      driverProfile: json['driver_profile'] as Map<String, dynamic>?,
+      driverProfile: (json['driverProfile'] ?? json['driver_profile']) as Map<String, dynamic>?,
       preferences: json['preferences'] as Map<String, dynamic>?,
-      isPremium: json['is_premium'] as bool? ?? false,
-      totalHazardsReported: json['total_hazards_reported'] as int? ?? 0,
-      verifiedReports: json['verified_reports'] as int? ?? 0,
+      isPremium: (json['isPremium'] ?? json['is_premium'] ?? false) as bool,
+      totalHazardsReported: (json['totalHazardsReported'] ?? json['total_hazards_reported'] ?? 0) as int,
+      verifiedReports: (json['verifiedReports'] ?? json['verified_reports'] ?? 0) as int,
     );
   }
   

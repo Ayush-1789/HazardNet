@@ -33,14 +33,21 @@ class AuthApiService {
       },
     );
 
-    // Save token and user info
-    final token = response['token'] as String;
-    final userData = response['user'] as Map<String, dynamic>;
-    
-    await _saveAuthData(token, userData['id'] as String);
-    _apiService.setAuthToken(token);
+    // Save token and user info - validate response
+    final token = response['token'];
+    final userData = response['user'];
 
-    return UserModel.fromJson(userData);
+    if (token == null || userData == null) {
+      throw Exception('Invalid response from server: missing token or user data');
+    }
+
+    final tokenStr = token.toString();
+    final userMap = Map<String, dynamic>.from(userData as Map);
+
+    await _saveAuthData(tokenStr, userMap['id'].toString());
+    _apiService.setAuthToken(tokenStr);
+
+    return UserModel.fromJson(userMap);
   }
 
   /// Login user
@@ -56,14 +63,21 @@ class AuthApiService {
       },
     );
 
-    // Save token and user info
-    final token = response['token'] as String;
-    final userData = response['user'] as Map<String, dynamic>;
-    
-    await _saveAuthData(token, userData['id'] as String);
-    _apiService.setAuthToken(token);
+    // Save token and user info - validate response
+    final token = response['token'];
+    final userData = response['user'];
 
-    return UserModel.fromJson(userData);
+    if (token == null || userData == null) {
+      throw Exception('Invalid response from server: missing token or user data');
+    }
+
+    final tokenStr = token.toString();
+    final userMap = Map<String, dynamic>.from(userData as Map);
+
+    await _saveAuthData(tokenStr, userMap['id'].toString());
+    _apiService.setAuthToken(tokenStr);
+
+    return UserModel.fromJson(userMap);
   }
 
   /// Logout user

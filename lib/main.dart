@@ -17,6 +17,7 @@ import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
 import 'package:event_safety_app/bloc/camera/camera_bloc.dart';
 import 'package:event_safety_app/bloc/alerts/alerts_bloc.dart';
 import 'package:event_safety_app/screens/welcome/welcome_screen.dart';
+import 'package:event_safety_app/screens/auth/login_screen.dart';
 // dev test screen removed
 import 'package:event_safety_app/data/services/tflite_service.dart';
 import 'package:event_safety_app/data/services/captured_hazard_store.dart';
@@ -104,6 +105,9 @@ class HazardNetApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system, // Follow system theme
+        routes: {
+          '/login': (context) => const LoginScreen(),
+        },
         home: const WelcomeScreen(),
       ),
     );
