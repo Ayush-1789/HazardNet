@@ -1,19 +1,19 @@
 /// Configuration for TFLite models
-/// Change MODEL_FILENAME to switch models easily - just update this constant
+/// Change modelFilename to switch models easily - just update this constant
 /// and place your new model in the models/ folder
 class ModelConfig {
   // ============================================
   // 🔧 CHANGE THIS TO SWAP MODELS
   // ============================================
   // unified_hazards_int8.tflite was detecting potholes at 36.9% with 70ms inference
-  static const String MODEL_FILENAME = 'unified_hazards_int8.tflite';
+  static const String modelFilename = 'unified_hazards_int8.tflite';
   
   // ============================================
   // Model path (automatically constructed)
   // ============================================
   // The models are stored under the `detection_models/` folder in this repo.
   // Keep this in sync with `flutter` assets declared in `pubspec.yaml`.
-  static const String MODEL_PATH = 'detection_models/$MODEL_FILENAME';
+  static const String modelPath = 'detection_models/$modelFilename';
   
   // ============================================
   // Model Input/Output Configuration
@@ -23,8 +23,8 @@ class ModelConfig {
   // Input image dimensions (YOLOv8 typically uses 640x640)
   // ⚠️ MUST MATCH YOUR MODEL'S ACTUAL INPUT SIZE!
   // unified_hazards_int8.tflite: 256x256 input
-  static const int INPUT_WIDTH = 256;
-  static const int INPUT_HEIGHT = 256;
+  static const int inputWidth = 256;
+  static const int inputHeight = 256;
   
   // Number of detection classes
   // Can't use `const` with `.length` in a compile-time constant expression on

@@ -69,7 +69,7 @@ class BoundingBoxPainter extends CustomPainter {
 
     // Draw semi-transparent fill
     final fillPaint = Paint()
-      ..color = color.withOpacity(0.2)
+      ..color = color.withValues(alpha:0.2)
       ..style = PaintingStyle.fill;
     canvas.drawRect(rect, fillPaint);
 

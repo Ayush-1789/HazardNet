@@ -194,8 +194,8 @@ class _CameraScreenState extends State<CameraScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: _isDetecting
-                            ? AppColors.secondaryGreen.withOpacity(0.9)
-                            : AppColors.grey800.withOpacity(0.7),
+                            ? AppColors.secondaryGreen.withValues(alpha:0.9)
+                            : AppColors.grey800.withValues(alpha:0.7),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -236,7 +236,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha:0.5),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Column(
@@ -316,7 +316,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                     color: (_isDetecting
                                             ? AppColors.error
                                             : AppColors.primaryBlue)
-                                        .withOpacity(0.5),
+                                        .withValues(alpha:0.5),
                                     blurRadius: 20,
                                     offset: const Offset(0, 4),
                                   ),
@@ -451,7 +451,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.black.withOpacity(0.9),
+      backgroundColor: Colors.black.withValues(alpha:0.9),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -792,7 +792,7 @@ class _CircleButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha:0.5),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -827,7 +827,7 @@ class _ActionButton extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.grey800.withOpacity(0.8),
+              color: AppColors.grey800.withValues(alpha:0.8),
               shape: BoxShape.circle,
             ),
             child: Icon(

@@ -203,8 +203,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  page.color.withOpacity(0.2),
-                  page.color.withOpacity(0.05),
+                  page.color.withValues(alpha:0.2),
+                  page.color.withValues(alpha:0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

@@ -201,13 +201,13 @@ class _AlertCard extends StatelessWidget {
         color: alert.isRead 
             ? (isDark ? AppColors.darkCard : Colors.white)
             : (isDark 
-                ? AppColors.primaryBlue.withOpacity(0.15)
-                : AppColors.primaryBlue.withOpacity(0.05)),
+                ? AppColors.primaryBlue.withValues(alpha:0.15)
+                : AppColors.primaryBlue.withValues(alpha:0.05)),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: alert.isRead
               ? AppColors.grey200
-              : AppColors.primaryBlue.withOpacity(0.2),
+              : AppColors.primaryBlue.withValues(alpha:0.2),
         ),
       ),
       child: InkWell(
@@ -227,7 +227,7 @@ class _AlertCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _getSeverityColor().withOpacity(0.1),
+                  color: _getSeverityColor().withValues(alpha:0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -299,7 +299,7 @@ class _AlertCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getSeverityColor().withOpacity(0.1),
+                            color: _getSeverityColor().withValues(alpha:0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

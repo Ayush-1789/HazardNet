@@ -67,7 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    color: AppColors.primaryBlue.withValues(alpha:0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -116,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               : Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha:0.08),
               blurRadius: 30,
               offset: const Offset(0, -10),
               spreadRadius: 0,
@@ -201,7 +201,7 @@ class DashboardHomeScreen extends StatelessWidget {
                       height: 200,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha:0.1),
                       ),
                     ),
                   ),
@@ -213,7 +213,7 @@ class DashboardHomeScreen extends StatelessWidget {
                       height: 150,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha:0.05),
                       ),
                     ),
                   ),
@@ -237,7 +237,7 @@ class DashboardHomeScreen extends StatelessWidget {
                                 children: [
                                   Icon(
                                     _getGreetingIcon(),
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha:0.9),
                                     size: 18,
                                   ),
                                   const SizedBox(width: 8),
@@ -245,7 +245,7 @@ class DashboardHomeScreen extends StatelessWidget {
                                     _getGreeting(),
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withValues(alpha:0.9),
                                       fontWeight: FontWeight.w500,
                                       letterSpacing: 0.5,
                                     ),
@@ -267,7 +267,7 @@ class DashboardHomeScreen extends StatelessWidget {
                                 'Stay safe on the road',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha:0.8),
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -472,12 +472,12 @@ class DashboardHomeScreen extends StatelessWidget {
         color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.primaryBlue.withValues(alpha:0.1),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.08),
+            color: AppColors.primaryBlue.withValues(alpha:0.08),
             blurRadius: 30,
             offset: const Offset(0, 10),
             spreadRadius: -5,
@@ -496,7 +496,7 @@ class DashboardHomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      color: AppColors.primaryBlue.withValues(alpha:0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -640,7 +640,7 @@ class DashboardHomeScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 20),
@@ -704,7 +704,7 @@ class DashboardHomeScreen extends StatelessWidget {
           subtitle: 'View stats',
           icon: Icons.person_rounded,
           gradient: LinearGradient(
-            colors: [AppColors.accentPurple, AppColors.accentPurple.withOpacity(0.7)],
+            colors: [AppColors.accentPurple, AppColors.accentPurple.withValues(alpha:0.7)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -732,7 +732,7 @@ class DashboardHomeScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: gradient.colors.first.withOpacity(0.4),
+                color: gradient.colors.first.withValues(alpha:0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
                 spreadRadius: -4,
@@ -747,7 +747,7 @@ class DashboardHomeScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withValues(alpha:0.25),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -778,7 +778,7 @@ class DashboardHomeScreen extends StatelessWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha:0.9),
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -830,12 +830,12 @@ class DashboardHomeScreen extends StatelessWidget {
         color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: progressColor.withOpacity(0.15),
+          color: progressColor.withValues(alpha:0.15),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: progressColor.withOpacity(0.1),
+            color: progressColor.withValues(alpha:0.1),
             blurRadius: 30,
             offset: const Offset(0, 10),
             spreadRadius: -5,
@@ -853,14 +853,14 @@ class DashboardHomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [progressColor, progressColor.withOpacity(0.7)],
+                      colors: [progressColor, progressColor.withValues(alpha:0.7)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: progressColor.withOpacity(0.3),
+                        color: progressColor.withValues(alpha:0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -917,10 +917,10 @@ class DashboardHomeScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: progressColor.withOpacity(0.1),
+                    color: progressColor.withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: progressColor.withOpacity(0.3),
+                      color: progressColor.withValues(alpha:0.3),
                       width: 1.5,
                     ),
                   ),
@@ -964,11 +964,11 @@ class DashboardHomeScreen extends StatelessWidget {
                       height: 10,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [progressColor, progressColor.withOpacity(0.8)],
+                          colors: [progressColor, progressColor.withValues(alpha:0.8)],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: progressColor.withOpacity(0.4),
+                            color: progressColor.withValues(alpha:0.4),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -984,10 +984,10 @@ class DashboardHomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.08),
+                  color: AppColors.error.withValues(alpha:0.08),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.error.withOpacity(0.2),
+                    color: AppColors.error.withValues(alpha:0.2),
                     width: 1.5,
                   ),
                 ),
@@ -999,7 +999,7 @@ class DashboardHomeScreen extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: [
                             AppColors.error,
-                            AppColors.error.withOpacity(0.8),
+                            AppColors.error.withValues(alpha:0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(10),
@@ -1095,12 +1095,12 @@ class DashboardHomeScreen extends StatelessWidget {
         color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha:0.15),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha:0.08),
             blurRadius: 20,
             offset: const Offset(0, 6),
             spreadRadius: -4,
@@ -1122,14 +1122,14 @@ class DashboardHomeScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [color, color.withOpacity(0.7)],
+                          colors: [color, color.withValues(alpha:0.7)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.3),
+                            color: color.withValues(alpha:0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -1149,7 +1149,7 @@ class DashboardHomeScreen extends StatelessWidget {
                             border: Border.all(color: Colors.white, width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.error.withOpacity(0.4),
+                                color: AppColors.error.withValues(alpha:0.4),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -1217,7 +1217,7 @@ class DashboardHomeScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -1254,8 +1254,8 @@ class DashboardHomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.1),
-                  AppColors.accentPurple.withOpacity(0.1),
+                  AppColors.primaryBlue.withValues(alpha:0.1),
+                  AppColors.accentPurple.withValues(alpha:0.1),
                 ],
               ),
               shape: BoxShape.circle,
