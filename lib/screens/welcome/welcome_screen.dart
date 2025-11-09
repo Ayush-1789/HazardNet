@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/foundation.dart';
+// Dev-only test screen removed
 import 'package:event_safety_app/core/theme/app_colors.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
 import 'package:event_safety_app/screens/dashboard/dashboard_screen.dart';
@@ -86,6 +88,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
               ),
             ),
+            // (dev-only test screen removed)
 
             // PageView for onboarding pages
             Expanded(

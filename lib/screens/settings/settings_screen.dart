@@ -117,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.radar, color: AppColors.primary, size: 24),
+                    Icon(Icons.radar, color: AppColors.primaryBlue, size: 24),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -309,7 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color? titleColor,
   }) {
     return ListTile(
-      leading: Icon(icon, color: titleColor ?? AppColors.primary),
+  leading: Icon(icon, color: titleColor ?? AppColors.primaryBlue),
       title: Text(
         title,
         style: TextStyle(
@@ -331,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return SwitchListTile(
-      secondary: Icon(icon, color: AppColors.primary),
+  secondary: Icon(icon, color: AppColors.primaryBlue),
       title: Text(
         title,
         style: const TextStyle(fontWeight: FontWeight.w500),
@@ -339,7 +339,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       subtitle: Text(subtitle),
       value: value,
       onChanged: onChanged,
-      activeColor: AppColors.primary,
+  activeColor: AppColors.primaryBlue,
     );
   }
 
@@ -352,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<T?> onChanged,
   }) {
     return RadioListTile<T>(
-      secondary: Icon(icon, color: AppColors.primary),
+      secondary: Icon(icon, color: AppColors.primaryBlue),
       title: Text(
         title,
         style: const TextStyle(fontWeight: FontWeight.w500),
@@ -366,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       value: value,
       groupValue: groupValue,
       onChanged: onChanged,
-      activeColor: AppColors.primary,
+  activeColor: AppColors.primaryBlue,
     );
   }
 
@@ -404,7 +404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () {
-              context.read<AuthBloc>().add(LogoutRequested());
+              context.read<AuthBloc>().add(SignOut());
               Navigator.pop(context);
               Navigator.pushReplacementNamed(context, '/login');
             },

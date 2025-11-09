@@ -1,4 +1,6 @@
 /// App-wide constants for HazardNet application
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class AppConstants {
   // App Info
   static const String appName = 'HazardNet';
@@ -109,6 +111,19 @@ class AppConstants {
   
   // Multi-signature verification
   static const int minReportsForVerification = 3; // k value for tamper-proof system
+  
+  // Voice Assistant Settings
+  static const double voiceWarningDistanceMeters = 500.0; // Trigger voice warning at 500m
+  static const double voiceWarningMinDistance = 50.0; // Don't warn if hazard is passed
+  static const int voiceWarningCooldownSeconds = 30; // Don't repeat warning for same hazard within 30s
+  static const String defaultVoiceLanguage = 'en'; // Default to English
+  static const String keyVoiceLanguagePreference = 'voice_language_preference';
+  static const String keyVoiceAssistantEnabled = 'voice_assistant_enabled';
+  
+  // ElevenLabs API Configuration
+  // The API key is loaded from environment variables using flutter_dotenv.
+  // Make sure to call `await dotenv.load()` in `main()` before using this value.
+  static String get elevenLabsApiKey => dotenv.env['ELEVENLABS_API_KEY'] ?? '';
   
   // Error Messages
   static const String errorNoInternet = 'No internet connection';

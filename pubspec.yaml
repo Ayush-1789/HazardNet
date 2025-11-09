@@ -43,6 +43,7 @@ dependencies:
   # Permissions & Device Info
   permission_handler: ^11.3.1
   device_info_plus: ^10.1.2
+  package_info_plus: ^4.0.0
   
   # Camera & Sensors
   camera: ^0.11.0+2
@@ -55,6 +56,8 @@ dependencies:
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   logger: ^2.4.0
+  audioplayers: ^6.1.0  # For voice assistant audio playback
+  flutter_dotenv: ^5.0.2
   
   # Image Processing & ML Ready
   image: ^4.2.0
@@ -87,6 +90,7 @@ flutter:
     - assets/animations/
     - assets/images/
     - detection_models/
+    - .env
   
   # Uncomment and add Poppins font files when downloaded
   # Download from: https://fonts.google.com/specimen/Poppins
