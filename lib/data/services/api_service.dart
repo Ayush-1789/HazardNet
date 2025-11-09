@@ -59,11 +59,11 @@ class ApiService {
         uri,
         headers: _buildHeaders(),
       ).timeout(
-        const Duration(seconds: 30),
+        const Duration(seconds: 60), // Increased to 60s for Railway wake-up
         onTimeout: () {
-          print('⏱️ [API-GET] Request timeout after 30 seconds');
+          print('⏱️ [API-GET] Request timeout after 60 seconds');
           throw ApiException(
-            message: 'Connection timeout. Please check your internet connection.',
+            message: 'Server is waking up or connection issue. Please wait and try again.',
             statusCode: 408,
           );
         },
@@ -98,11 +98,11 @@ class ApiService {
         headers: _buildHeaders(),
         body: body != null ? jsonEncode(body) : null,
       ).timeout(
-        const Duration(seconds: 30),
+        const Duration(seconds: 60), // Increased to 60s for Railway wake-up
         onTimeout: () {
-          print('⏱️ [API-POST] Request timeout after 30 seconds');
+          print('⏱️ [API-POST] Request timeout after 60 seconds');
           throw ApiException(
-            message: 'Connection timeout. Please check your internet connection.',
+            message: 'Server is waking up or connection issue. Please wait and try again.',
             statusCode: 408,
           );
         },

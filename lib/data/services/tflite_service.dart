@@ -248,8 +248,8 @@ class TFLiteService {
 
   /// Preprocess generic RGB image for interpreter input
   dynamic _preprocessRgbImage(img.Image rgbImage) {
-  final int targetWidth = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
-  final int targetHeight = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
+    final int targetWidth = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
+    final int targetHeight = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
 
     final double sourceAspect = rgbImage.width / rgbImage.height;
     final double targetAspect = targetWidth / targetHeight;
