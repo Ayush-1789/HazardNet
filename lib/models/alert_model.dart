@@ -63,10 +63,11 @@ class AlertModel extends Equatable {
       type: json['type'] as String,
       severity: json['severity'] as String,
       timestamp: DateTime.parse(json['timestamp'] as String),
-      isRead: json['is_read'] as bool? ?? false,
-      hazardId: json['hazard_id'] as String?,
+      // Support both snake_case and camelCase for backend compatibility
+      isRead: (json['is_read'] ?? json['isRead']) as bool? ?? false,
+      hazardId: (json['hazard_id'] ?? json['hazardId']) as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
-      actionUrl: json['action_url'] as String?,
+      actionUrl: (json['action_url'] ?? json['actionUrl']) as String?,
     );
   }
   
