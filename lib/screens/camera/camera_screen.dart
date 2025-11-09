@@ -37,9 +37,15 @@ class _CameraScreenState extends State<CameraScreen> {
     _locationBloc = context.read<LocationBloc>();
     _cameraBloc = context.read<CameraBloc>();
     
-    // Initialize camera and start location tracking
-    _cameraBloc.add(InitializeCamera());
+    // Start location tracking
     _locationBloc.add(StartLocationTracking());
+    
+    // Initialize camera with delay to ensure proper context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _cameraBloc.add(InitializeCamera());
+      }
+    });
     
     // DON'T auto-start detection - user must click the button
   }
@@ -86,17 +92,16 @@ class _CameraScreenState extends State<CameraScreen> {
           }
         },
         builder: (context, state) {
-          // Reinitialize camera if needed (after disposal or error)
-          if (state is CameraInitial || state is CameraError) {
-            // Trigger immediate reinitialization 
+          // Only reinitialize on error, not on initial state to prevent loop
+          if (state is CameraError) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) {
+              if (mounted && state is CameraError) {
                 _cameraBloc.add(InitializeCamera());
               }
             });
           }
           
-          if (state is CameraLoading) {
+          if (state is CameraInitial || state is CameraLoading) {
             return const Center(
               child: CircularProgressIndicator(
                 color: AppColors.primaryBlue,
@@ -147,17 +152,16 @@ class _CameraScreenState extends State<CameraScreen> {
         // Camera preview
         CameraPreview(controller),
 
-        // Bounding box overlay for detections
-        if (state.detections.isNotEmpty)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return BoundingBoxOverlay(
-                detections: state.detections,
-                previewSize: previewSize,
-                screenSize: Size(constraints.maxWidth, constraints.maxHeight),
-              );
-            },
-          ),
+        // Bounding box overlay for detections - ALWAYS SHOW (even if empty)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return BoundingBoxOverlay(
+              detections: state.detections,
+              previewSize: previewSize,
+              screenSize: Size(constraints.maxWidth, constraints.maxHeight),
+            );
+          },
+        ),
 
         // Detection overlay border
         if (_isDetecting)
@@ -347,8 +351,6 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
           ),
         ),
-
-        // Detection boxes will be overlaid here when ML model is connected
       ],
     );
   }

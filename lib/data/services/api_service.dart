@@ -2,6 +2,7 @@
 /// Handles authentication tokens, error handling, and request/response formatting
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:event_safety_app/core/constants/app_constants.dart';
 
@@ -57,6 +58,15 @@ class ApiService {
       final response = await _client.get(
         uri,
         headers: _buildHeaders(),
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          print('⏱️ [API-GET] Request timeout after 30 seconds');
+          throw ApiException(
+            message: 'Connection timeout. Please check your internet connection.',
+            statusCode: 408,
+          );
+        },
       );
       final duration = DateTime.now().difference(startTime);
 
@@ -87,11 +97,21 @@ class ApiService {
         uri,
         headers: _buildHeaders(),
         body: body != null ? jsonEncode(body) : null,
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          print('⏱️ [API-POST] Request timeout after 30 seconds');
+          throw ApiException(
+            message: 'Connection timeout. Please check your internet connection.',
+            statusCode: 408,
+          );
+        },
       );
       final duration = DateTime.now().difference(startTime);
 
       print('📥 [API-POST] Response received in ${duration.inMilliseconds}ms');
       print('📊 [API-POST] Status: ${response.statusCode}');
+      print('📄 [API-POST] Response body: ${response.body}');
 
       return _handleResponse(response);
     } catch (e) {
@@ -164,6 +184,16 @@ class ApiService {
       print('📁 [API-UPLOAD] File: $filePath');
       print('🔑 [API-UPLOAD] Has auth token: ${_authToken != null}');
       
+      // Check if file exists
+      final fileObj = File(filePath);
+      if (!await fileObj.exists()) {
+        print('❌ [API-UPLOAD] File does not exist: $filePath');
+        throw ApiException(message: 'File not found at path: $filePath', statusCode: 400);
+      }
+      
+      final fileSize = await fileObj.length();
+      print('📏 [API-UPLOAD] File size: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+      
       final request = http.MultipartRequest('POST', uri);
       
       // Add headers (excluding Content-Type as multipart sets it automatically)
@@ -179,10 +209,12 @@ class ApiService {
         filePath,
       );
       request.files.add(file);
+      print('✅ [API-UPLOAD] File added to request: ${file.filename}');
       
       // Add additional fields if provided
       if (additionalFields != null) {
         request.fields.addAll(additionalFields);
+        print('📝 [API-UPLOAD] Additional fields: $additionalFields');
       }
       
       final startTime = DateTime.now();
@@ -192,10 +224,12 @@ class ApiService {
       
       print('📥 [API-UPLOAD] Response received in ${duration.inMilliseconds}ms');
       print('📊 [API-UPLOAD] Status: ${response.statusCode}');
+      print('📄 [API-UPLOAD] Response body: ${response.body}');
       
       return _handleResponse(response);
     } catch (e) {
       print('❌ [API-UPLOAD] Error: ${e.toString()}');
+      print('❌ [API-UPLOAD] Stack trace: ${StackTrace.current}');
       throw _handleError(e);
     }
   }

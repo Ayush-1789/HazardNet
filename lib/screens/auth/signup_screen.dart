@@ -41,7 +41,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final name = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
-    final phone = _phoneCtrl.text.trim();
 
     context.read<AuthBloc>().add(
           SignUpWithEmail(

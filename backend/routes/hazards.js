@@ -14,8 +14,8 @@ router.post('/report', authenticateToken, async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO hazards (reported_by, type, latitude, longitude, severity, confidence, image_url, description)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO hazards (reported_by, type, latitude, longitude, severity, confidence, image_url, description, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
        RETURNING *`,
       [req.user.userId, type, latitude, longitude, severity, confidence || 0.0, imageUrl, description]
     );
@@ -30,11 +30,16 @@ router.post('/report', authenticateToken, async (req, res) => {
         longitude: parseFloat(hazard.longitude),
         severity: hazard.severity,
         confidence: parseFloat(hazard.confidence),
+        image_url: hazard.image_url,
         imageUrl: hazard.image_url,
         description: hazard.description,
+        is_verified: hazard.is_verified,
         isVerified: hazard.is_verified,
+        verification_count: hazard.verification_count,
         verificationCount: hazard.verification_count,
-        detectedAt: hazard.created_at
+        detected_at: hazard.created_at,
+        detectedAt: hazard.created_at,
+        created_at: hazard.created_at
       }
     });
   } catch (error) {
