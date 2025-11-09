@@ -248,8 +248,8 @@ class TFLiteService {
 
   /// Preprocess generic RGB image for interpreter input
   dynamic _preprocessRgbImage(img.Image rgbImage) {
-    final int targetWidth = _modelInputWidth ?? ModelConfig.inputWidth;
-    final int targetHeight = _modelInputHeight ?? ModelConfig.inputHeight;
+  final int targetWidth = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
+  final int targetHeight = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
 
     final double sourceAspect = rgbImage.width / rgbImage.height;
     final double targetAspect = targetWidth / targetHeight;
@@ -328,10 +328,10 @@ class TFLiteService {
     int quality = AppConstants.imageQuality,
     bool forBuffering = false,
   }) {
-    // For buffering, use much lower resolution to save CPU time
-    final int maxWidth = forBuffering ? 480 : AppConstants.maxImageWidth;
-    final int maxHeight = forBuffering ? 360 : AppConstants.maxImageHeight;
-    final int jpegQuality = forBuffering ? 40 : quality;
+  // For buffering, use reduced resolution to balance quality and speed
+  final int maxWidth = forBuffering ? 480 : AppConstants.maxImageWidth;
+  final int maxHeight = forBuffering ? 360 : AppConstants.maxImageHeight;
+  final int jpegQuality = forBuffering ? 60 : quality; // Higher quality for detection clarity
     
     // Calculate target dimensions maintaining aspect ratio
     final int sourceWidth = cameraImage.width;
@@ -671,8 +671,8 @@ class TFLiteService {
         _hasLoggedOutputInfo = true;
       }
 
-      final int inputWidthRef = _modelInputWidth ?? ModelConfig.inputWidth;
-      final int inputHeightRef = _modelInputHeight ?? ModelConfig.inputHeight;
+  final int inputWidthRef = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
+  final int inputHeightRef = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
 
       // Normalize predictions into List<List<double>> where each inner list is a prediction [x,y,w,h,...]
       final List<List<double>> preds = [];

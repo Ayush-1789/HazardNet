@@ -42,15 +42,15 @@ class ModelConfig {
   
   // Frame skipping for better FPS (buffer every Nth frame)
   // Increasing this reduces CPU work per second and can improve FPS.
-  static const int FRAME_SKIP = 15; // Buffer every 15th frame for maximum performance
+  static const int FRAME_SKIP = 2; // Capture every 2nd frame (~15fps buffer, 30fps preview)
 
   // Lightweight pre-buffering cadence (store every Nth skipped frame)
   static const int PREBUFFER_EVERY_N = 0; // Disable pre-buffering to reduce overhead
   
   // Buffer configuration for gyro-triggered analysis
-  static const int BUFFER_DURATION_SECONDS = 5; // Maintain 5s of frames in memory (was 10)
-  static const int BUFFER_MAX_FRAMES = 150; // Roughly 30 FPS * 5 seconds (was 300)
-  static const int GYRO_ANALYSIS_MAX_FRAMES = 45; // Analyze at most 45 frames per trigger (was 90)
+  static const int BUFFER_DURATION_SECONDS = 10; // Maintain 10s of frames in memory
+  static const int BUFFER_MAX_FRAMES = 220; // ~22 FPS * 10 seconds with headroom
+  static const int GYRO_ANALYSIS_MAX_FRAMES = 55; // Analyze at most 55 frames per trigger
   static const double GYRO_MIN_CONFIDENCE = 0.35; // Minimum confidence to persist hazard
   
   // ============================================

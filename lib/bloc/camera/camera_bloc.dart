@@ -71,7 +71,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       final description = _availableCameras[_currentCameraIndex];
       _controller = CameraController(
         description,
-        ResolutionPreset.medium,  // Increased to medium for better image quality
+        ResolutionPreset.medium,  // Balance quality and performance
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -126,11 +126,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   Future<void> _onProcessFrame(ProcessFrame event, Emitter<CameraState> emit) async {
     if (!_isDetecting || !_imageStreamActive) return;
 
-    _frameCount++;
-    _framesProcessedSinceLastUpdate++;
+  _frameCount += event.frameSpan;
+  _framesProcessedSinceLastUpdate += event.frameSpan;
     
-    // Update FPS every 500ms for more responsive UI
     final now = DateTime.now();
+    
+    // Update FPS display every 500ms
     if (_lastFpsUpdate == null || now.difference(_lastFpsUpdate!).inMilliseconds >= 500) {
       final fps = _lastFpsUpdate == null 
           ? 0.0
@@ -147,30 +148,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       _framesProcessedSinceLastUpdate = 0;
     }
     
-  // Buffer every Nth frame for 10-second lookback (reduces per-frame work)
-  final int skip = ModelConfig.FRAME_SKIP <= 1 ? 1 : ModelConfig.FRAME_SKIP;
-  if (_frameCount % skip != 0) return;
+    // Convert CameraImage to JPEG quickly using optimized downsampling
+    // Add to buffer (already converted JPEG bytes)
+    final jpegBytes = event.imageData as Uint8List;
+    _frameBuffer.add(_BufferedFrame(bytes: jpegBytes, timestamp: now));
     
-    try {
-      Uint8List? jpegBytes;
-
-      // If the stream callback already converted to JPEG bytes, we receive Uint8List
-      if (event.imageData is Uint8List) {
-        jpegBytes = event.imageData as Uint8List;
-      } else {
-        // Fallback: convert CameraImage to JPEG (older callers)
-        jpegBytes = _tfliteService.convertCameraImageToJpeg(
-          event.imageData,
-          quality: AppConstants.imageQuality,
-          forBuffering: false,
-        );
-      }
-
-      if (jpegBytes == null) return;
-
-      _frameBuffer.add(_BufferedFrame(bytes: jpegBytes, timestamp: now));
+    // Lazy pruning every 15 frames
+    if (_frameCount % 15 == 0) {
       _pruneBuffer();
-    } catch (_) {}
+    }
   }
 
   Future<void> _onGyroImpactDetected(GyroImpactDetected event, Emitter<CameraState> emit) async {
@@ -370,7 +356,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       final description = _availableCameras[_currentCameraIndex];
       final newController = CameraController(
         description,
-        ResolutionPreset.medium,
+        ResolutionPreset.medium,  // Balance quality and performance
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -412,25 +398,29 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   Future<void> _startImageStream() async {
     if (_imageStreamActive || _controller == null) return;
     try {
-      // Convert camera frames to lightweight JPEG bytes inside the stream callback
-      // so we don't pass CameraImage objects across async event boundaries which
-      // can hold native buffers and lead to ImageReader 'maxImages' errors.
+      final int skip = ModelConfig.FRAME_SKIP <= 1 ? 1 : ModelConfig.FRAME_SKIP;
+      int framesSinceLastEmission = 0;
+
       await _controller!.startImageStream((image) {
+        framesSinceLastEmission++;
+
+        if (framesSinceLastEmission < skip) {
+          return; // Only process every Nth frame to control workload
+        }
+
         try {
-          // Synchronously convert CameraImage to small JPEG for detection buffer
           final jpeg = _tfliteService.convertCameraImageToJpeg(
             image,
-            quality: AppConstants.imageQuality,
             forBuffering: true,
           );
 
           if (jpeg != null) {
-            // Post the jpeg bytes to the bloc for processing (much lighter)
             // ignore: void_checks
-            add(ProcessFrame(jpeg));
+            add(ProcessFrame(jpeg, frameSpan: framesSinceLastEmission));
+            framesSinceLastEmission = 0;
           }
-        } catch (_) {
-          // Swallow conversion errors to avoid crashing the stream
+        } catch (e) {
+          debugPrint('Frame conversion error: $e');
         }
       });
       _imageStreamActive = true;
