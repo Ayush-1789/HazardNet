@@ -26,12 +26,13 @@ class StartRecording extends CameraEvent {}
 class StopRecording extends CameraEvent {}
 
 class ProcessFrame extends CameraEvent {
-  final dynamic imageData; // CameraImage or XFile
+  final dynamic imageData; // CameraImage or pre-converted bytes
+  final int frameSpan; // Number of stream frames represented by this event
   
-  const ProcessFrame(this.imageData);
+  const ProcessFrame(this.imageData, {this.frameSpan = 1});
   
   @override
-  List<Object?> get props => [imageData];
+  List<Object?> get props => [imageData, frameSpan];
 }
 
 class DisposeCameraEvent extends CameraEvent {}

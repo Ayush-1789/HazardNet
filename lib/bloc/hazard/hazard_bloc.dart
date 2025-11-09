@@ -157,10 +157,18 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
           event.imagePath,
         );
         
-        // Update the hazard with the image URL
-        submittedHazard = submittedHazard.copyWith(imageUrl: imageUrl);
-        
-        debugPrint('✅ Hazard submitted with image: ${submittedHazard.id}, image: $imageUrl');
+        try {
+          // Re-fetch hazard from server to get latest metadata (image URL, timestamps, etc.)
+          submittedHazard = await _hazardService.getHazardById(submittedHazard.id);
+        } catch (refreshError) {
+          // Fallback: update locally with resolved image URL
+          submittedHazard = submittedHazard.copyWith(
+            imageUrl: HazardModel.resolveImageUrl(imageUrl),
+          );
+          debugPrint('⚠️ Failed to refresh hazard after upload: $refreshError');
+        }
+
+        debugPrint('✅ Hazard submitted with image: ${submittedHazard.id}, image: ${submittedHazard.imageUrl}');
       } catch (uploadError) {
         debugPrint('⚠️ Failed to upload image, but hazard was submitted: $uploadError');
         // Continue even if image upload fails

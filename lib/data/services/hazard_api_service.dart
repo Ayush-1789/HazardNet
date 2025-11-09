@@ -52,6 +52,7 @@ class HazardApiService {
         'confidence': confidence,
         'description': description,
         'image_url': imageUrl,
+        'imageUrl': imageUrl,
         'depth': depth,
         'lane': lane,
         'metadata': metadata,
@@ -105,8 +106,11 @@ class HazardApiService {
   /// Get hazard by ID
   Future<HazardModel> getHazardById(String hazardId) async {
     final response = await _apiService.get('${AppConstants.hazardsEndpoint}/$hazardId');
-    final hazardData = response['hazard'] as Map<String, dynamic>;
-    return HazardModel.fromJson(hazardData);
+    final dynamic payload = response['hazard'] ?? response;
+    if (payload is Map<String, dynamic>) {
+      return HazardModel.fromJson(payload);
+    }
+    throw Exception('Unexpected hazard response structure');
   }
 
   /// Verify an existing hazard

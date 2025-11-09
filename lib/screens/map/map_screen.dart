@@ -792,7 +792,19 @@ class _MapScreenState extends State<MapScreen> {
                             itemCount: state.hazards.length,
                             itemBuilder: (context, index) {
                               final hazard = state.hazards[index];
-                              return _HazardListItem(hazard: hazard);
+                              return _HazardListItem(
+                                hazard: hazard,
+                                onTap: () {
+                                  // Center map on hazard location for context
+                                  _mapController?.animateCamera(
+                                    CameraUpdate.newLatLngZoom(
+                                      LatLng(hazard.latitude, hazard.longitude),
+                                      16,
+                                    ),
+                                  );
+                                  _showHazardDetails(hazard);
+                                },
+                              );
                             },
                           );
                         }
@@ -1142,102 +1154,106 @@ class _MapScreenState extends State<MapScreen> {
 /// Hazard list item widget
 class _HazardListItem extends StatelessWidget {
   final dynamic hazard;
+  final VoidCallback? onTap;
 
-  const _HazardListItem({required this.hazard});
+  const _HazardListItem({required this.hazard, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _getSeverityColor().withValues(alpha:0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getSeverityColor().withValues(alpha:0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _getSeverityColor(),
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _getSeverityColor().withValues(alpha:0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _getSeverityColor().withValues(alpha:0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _getSeverityColor(),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                _getHazardIcon(),
+                color: Colors.white,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              _getHazardIcon(),
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hazard.typeName,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.white : AppColors.grey900,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hazard.typeName,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.white : AppColors.grey900,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: AppColors.grey500,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _getTimeAgo(hazard.detectedAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.grey500,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    if (hazard.isVerified) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
                       Icon(
-                        Icons.verified,
+                        Icons.access_time,
                         size: 14,
-                        color: AppColors.secondaryGreen,
+                        color: AppColors.grey500,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Verified',
+                        _getTimeAgo(hazard.detectedAt),
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.secondaryGreen,
-                          fontWeight: FontWeight.w500,
+                          color: AppColors.grey500,
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      if (hazard.isVerified) ...[
+                        Icon(
+                          Icons.verified,
+                          size: 14,
+                          color: AppColors.secondaryGreen,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Verified',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.secondaryGreen,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: _getSeverityColor(),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              hazard.severityText,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _getSeverityColor(),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                hazard.severityText,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

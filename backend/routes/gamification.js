@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { authenticateToken } = require('../middleware/auth');
-const pool = require('../db');
+const { pool } = require('../db');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -19,13 +19,17 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-  
-  if (mimetype && extname) {
+  const mimetype = allowedTypes.test((file.mimetype || '').toLowerCase());
+
+  // Log file info for easier debugging of rejected uploads
+  console.log('Upload file filter:', { originalname: file.originalname, mimetype: file.mimetype, extname, mimetypeMatch: mimetype });
+
+  // Accept if either the extension OR the provided mimetype matches allowed image types.
+  if (extname || mimetype) {
     return cb(null, true);
-  } else {
-    cb(new Error('Only image files (jpeg, jpg, png, webp) are allowed!'));
   }
+
+  cb(new Error('Only image files (jpeg, jpg, png, webp) are allowed!'));
 };
 
 const upload = multer({

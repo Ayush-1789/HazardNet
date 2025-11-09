@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:event_safety_app/core/constants/app_constants.dart';
 
 /// Model representing a detected road hazard
 class HazardModel extends Equatable {
@@ -68,75 +69,138 @@ class HazardModel extends Equatable {
       'severity': severity,
       'confidence': confidence,
       'detected_at': detectedAt.toIso8601String(),
+      'detectedAt': detectedAt.toIso8601String(),
       'image_url': imageUrl,
+      'imageUrl': imageUrl,
       'description': description,
       'verification_count': verificationCount,
+      'verificationCount': verificationCount,
       'is_verified': isVerified,
+      'isVerified': isVerified,
       'metadata': metadata,
       'lane': lane,
       'depth': depth,
       'reported_by': reportedBy,
+      'reportedBy': reportedBy,
       'reported_by_name': reportedByName,
+      'reportedByName': reportedByName,
     };
   }
+
+  static String? _resolveImageUrl(dynamic value) {
+    if (value == null) return null;
+    final String url = value.toString();
+    if (url.isEmpty) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    try {
+      final apiUri = Uri.parse(AppConstants.baseApiUrl);
+      final resolved = Uri(
+        scheme: apiUri.scheme,
+        host: apiUri.host,
+        port: apiUri.hasPort ? apiUri.port : null,
+        path: url.startsWith('/') ? url : '/$url',
+      );
+      return resolved.toString();
+    } catch (_) {
+      return url;
+    }
+  }
+
+  static String? resolveImageUrl(String? url) => _resolveImageUrl(url);
   
   /// Create model from JSON
   factory HazardModel.fromJson(Map<String, dynamic> json) {
+    dynamic read(List<String> keys) {
+      for (final key in keys) {
+        if (json.containsKey(key) && json[key] != null) {
+          return json[key];
+        }
+      }
+      return null;
+    }
+
+    double? asDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
+    int? asInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value.toString());
+    }
+
     DateTime parseDetectedAt(dynamic value) {
+      DateTime asLocal(DateTime dt) => dt.isUtc ? dt.toLocal() : dt;
+
       try {
         if (value == null) return DateTime.now();
+
         if (value is int) {
-          // Might be seconds or milliseconds
-          if (value > 1000000000000) {
-            // looks like milliseconds
-            return DateTime.fromMillisecondsSinceEpoch(value);
-          }
-          // assume seconds
-          return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+          final isMillisecondPrecision = value > 1000000000000;
+          final epochMillis = isMillisecondPrecision ? value : value * 1000;
+          return asLocal(DateTime.fromMillisecondsSinceEpoch(epochMillis, isUtc: true));
         }
 
         if (value is double) {
-          final v = value.toInt();
-          if (v > 1000000000000) {
-            return DateTime.fromMillisecondsSinceEpoch(v);
-          }
-          return DateTime.fromMillisecondsSinceEpoch(v * 1000);
+          final raw = value.toInt();
+          final isMillisecondPrecision = raw > 1000000000000;
+          final epochMillis = isMillisecondPrecision ? raw : raw * 1000;
+          return asLocal(DateTime.fromMillisecondsSinceEpoch(epochMillis, isUtc: true));
         }
 
-        if (value is String) {
-          // Try ISO8601 parse first
+        if (value is String && value.isNotEmpty) {
           try {
-            return DateTime.parse(value);
+            return asLocal(DateTime.parse(value));
           } catch (_) {
-            // Try numeric string
             final parsed = int.tryParse(value);
             if (parsed != null) {
-              if (parsed > 1000000000000) return DateTime.fromMillisecondsSinceEpoch(parsed);
-              return DateTime.fromMillisecondsSinceEpoch(parsed * 1000);
+              final isMillisecondPrecision = parsed > 1000000000000;
+              final epochMillis = isMillisecondPrecision ? parsed : parsed * 1000;
+              return asLocal(DateTime.fromMillisecondsSinceEpoch(epochMillis, isUtc: true));
             }
           }
         }
       } catch (_) {}
+
       return DateTime.now();
     }
 
+    final metadataRaw = json['metadata'];
+    Map<String, dynamic>? metadata;
+    if (metadataRaw is Map<String, dynamic>) {
+      metadata = metadataRaw;
+    } else if (metadataRaw is String && metadataRaw.isNotEmpty) {
+      metadata = {'raw': metadataRaw};
+    }
+
+    final verificationRaw = read(['verification_count', 'verificationCount', 'reports_count']);
+    final isVerifiedRaw = read(['is_verified', 'isVerified']);
+
     return HazardModel(
-      id: json['id']?.toString() ?? '',
-      type: json['type']?.toString() ?? 'unknown',
-      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      severity: json['severity']?.toString() ?? 'medium',
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      detectedAt: parseDetectedAt(json['detected_at']),
-      imageUrl: json['image_url'] as String?,
-      description: json['description'] as String?,
-      verificationCount: json['verification_count'] as int? ?? 1,
-      isVerified: json['is_verified'] as bool? ?? false,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      lane: json['lane'] as String?,
-      depth: json['depth'] != null ? (json['depth'] as num).toDouble() : null,
-      reportedBy: json['reported_by'] as String?,
-      reportedByName: json['reported_by_name'] as String?,
+      id: (read(['id']) ?? '').toString(),
+      type: (read(['type']) ?? 'unknown').toString(),
+      latitude: asDouble(read(['latitude'])) ?? 0.0,
+      longitude: asDouble(read(['longitude'])) ?? 0.0,
+      severity: (read(['severity', 'severity_level']) ?? 'medium').toString(),
+      confidence: asDouble(read(['confidence'])) ?? 0.0,
+      detectedAt: parseDetectedAt(read(['detected_at', 'detectedAt', 'created_at', 'createdAt', 'timestamp'])),
+      imageUrl: _resolveImageUrl(read(['image_url', 'imageUrl', 'photo_url', 'photoUrl'])),
+      description: read(['description']) as String?,
+      verificationCount: asInt(verificationRaw) ?? 1,
+      isVerified: isVerifiedRaw is bool
+          ? isVerifiedRaw
+          : (isVerifiedRaw != null && isVerifiedRaw.toString().toLowerCase() == 'true'),
+      metadata: metadata,
+      lane: read(['lane']) as String?,
+      depth: asDouble(read(['depth'])),
+      reportedBy: read(['reported_by', 'reportedBy'])?.toString(),
+      reportedByName: read(['reported_by_name', 'reportedByName', 'reporter_name', 'reporterName'])?.toString(),
     );
   }
   

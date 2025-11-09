@@ -14,6 +14,7 @@ import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_event.dart';
 import 'package:event_safety_app/models/hazard_model.dart';
 import 'package:event_safety_app/models/captured_hazard_model.dart';
+import 'package:event_safety_app/models/location_model.dart';
 import 'package:event_safety_app/widgets/bounding_box_overlay.dart';
 
 /// Camera screen for real-time hazard detection
@@ -29,6 +30,9 @@ class _CameraScreenState extends State<CameraScreen> {
   late final LocationBloc _locationBloc;
   late final CameraBloc _cameraBloc;
   String? _lastAutoCaptureId;
+  final Map<String, DateTime> _proximityAlerts = {};
+  static const double _hazardAlertRadiusMeters = 80.0;
+  static const Duration _hazardAlertCooldown = Duration(minutes: 5);
 
   @override
   void initState() {
@@ -60,9 +64,15 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: BlocConsumer<CameraBloc, CameraState>(
+    return BlocListener<LocationBloc, LocationState>(
+      listener: (context, state) {
+        if (state is LocationLoaded) {
+          _handleLocationAlerts(context, state.location);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: BlocConsumer<CameraBloc, CameraState>(
         listener: (context, state) {
           if (state is CameraPermissionDenied) {
             _showPermissionDialog();
@@ -353,6 +363,100 @@ class _CameraScreenState extends State<CameraScreen> {
         ),
       ],
     );
+  }
+
+  void _handleLocationAlerts(BuildContext context, LocationModel location) {
+    if (!mounted) return;
+
+    final cameraState = _cameraBloc.state;
+    if (cameraState is CameraReady) {
+      for (final hazard in cameraState.capturedHazards) {
+        final coords = _extractCoordinates(hazard.locationSnapshot);
+        if (coords == null) continue;
+        final label = hazard.detections.isNotEmpty
+            ? hazard.detections.first.label
+            : 'Hazard';
+        _maybeTriggerHazardAlert(
+          context,
+          'local_${hazard.id}',
+          label,
+          coords.$1,
+          coords.$2,
+          location,
+        );
+      }
+    }
+
+    final hazardState = context.read<HazardBloc>().state;
+    if (hazardState is HazardLoaded) {
+      for (final hazard in hazardState.hazards) {
+        _maybeTriggerHazardAlert(
+          context,
+          'remote_${hazard.id}',
+          hazard.type,
+          hazard.latitude,
+          hazard.longitude,
+          location,
+        );
+      }
+    }
+  }
+
+  bool _maybeTriggerHazardAlert(
+    BuildContext context,
+    String hazardId,
+    String label,
+    double latitude,
+    double longitude,
+    LocationModel currentLocation,
+  ) {
+    final distance = _distanceMeters(latitude, longitude, currentLocation);
+    if (distance > _hazardAlertRadiusMeters) return false;
+
+    final lastAlert = _proximityAlerts[hazardId];
+    final now = DateTime.now();
+    if (lastAlert != null && now.difference(lastAlert) < _hazardAlertCooldown) {
+      return false;
+    }
+
+    _proximityAlerts[hazardId] = now;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('$label ahead (${distance.toStringAsFixed(0)} m)'),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    return true;
+  }
+
+  double _distanceMeters(
+    double latitude,
+    double longitude,
+    LocationModel currentLocation,
+  ) {
+    final hazardLocation = LocationModel(
+      latitude: latitude,
+      longitude: longitude,
+      timestamp: DateTime.now(),
+    );
+    return currentLocation.distanceTo(hazardLocation);
+  }
+
+  (double, double)? _extractCoordinates(Map<String, dynamic>? snapshot) {
+    if (snapshot == null) return null;
+    final lat = _parseCoordinate(snapshot['latitude']);
+    final lon = _parseCoordinate(snapshot['longitude']);
+    if (lat == null || lon == null) return null;
+    return (lat, lon);
+  }
+
+  double? _parseCoordinate(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
   Widget _buildPermissionDenied() {

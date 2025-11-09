@@ -43,7 +43,7 @@ class TFLiteService {
   /// Initialize the TFLite interpreter
   Future<void> loadModel() async {
     try {
-      print('🔄 Loading model: ${ModelConfig.modelPath}');
+      print('🔄 Loading model: ${ModelConfig.MODEL_PATH}');
 
       Interpreter? interpreter;
 
@@ -55,7 +55,7 @@ class TFLiteService {
           gpuOptions.addDelegate(_gpuDelegate!);
 
           interpreter = await Interpreter.fromAsset(
-            ModelConfig.modelPath,
+            ModelConfig.MODEL_PATH,
             options: gpuOptions,
           );
 
@@ -81,7 +81,7 @@ class TFLiteService {
         }
 
         interpreter = await Interpreter.fromAsset(
-          ModelConfig.modelPath,
+          ModelConfig.MODEL_PATH,
           options: fallbackOptions,
         );
       }
@@ -328,10 +328,10 @@ class TFLiteService {
     int quality = AppConstants.imageQuality,
     bool forBuffering = false,
   }) {
-    // For buffering, use much lower resolution to save CPU time
-    final int maxWidth = forBuffering ? 480 : AppConstants.maxImageWidth;
-    final int maxHeight = forBuffering ? 360 : AppConstants.maxImageHeight;
-    final int jpegQuality = forBuffering ? 40 : quality;
+  // For buffering, use reduced resolution to balance quality and speed
+  final int maxWidth = forBuffering ? 480 : AppConstants.maxImageWidth;
+  final int maxHeight = forBuffering ? 360 : AppConstants.maxImageHeight;
+  final int jpegQuality = forBuffering ? 60 : quality; // Higher quality for detection clarity
     
     // Calculate target dimensions maintaining aspect ratio
     final int sourceWidth = cameraImage.width;
