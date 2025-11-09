@@ -82,6 +82,44 @@ class HazardModel extends Equatable {
   
   /// Create model from JSON
   factory HazardModel.fromJson(Map<String, dynamic> json) {
+    DateTime parseDetectedAt(dynamic value) {
+      try {
+        if (value == null) return DateTime.now();
+        if (value is int) {
+          // Might be seconds or milliseconds
+          if (value > 1000000000000) {
+            // looks like milliseconds
+            return DateTime.fromMillisecondsSinceEpoch(value);
+          }
+          // assume seconds
+          return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+        }
+
+        if (value is double) {
+          final v = value.toInt();
+          if (v > 1000000000000) {
+            return DateTime.fromMillisecondsSinceEpoch(v);
+          }
+          return DateTime.fromMillisecondsSinceEpoch(v * 1000);
+        }
+
+        if (value is String) {
+          // Try ISO8601 parse first
+          try {
+            return DateTime.parse(value);
+          } catch (_) {
+            // Try numeric string
+            final parsed = int.tryParse(value);
+            if (parsed != null) {
+              if (parsed > 1000000000000) return DateTime.fromMillisecondsSinceEpoch(parsed);
+              return DateTime.fromMillisecondsSinceEpoch(parsed * 1000);
+            }
+          }
+        }
+      } catch (_) {}
+      return DateTime.now();
+    }
+
     return HazardModel(
       id: json['id']?.toString() ?? '',
       type: json['type']?.toString() ?? 'unknown',
@@ -89,9 +127,7 @@ class HazardModel extends Equatable {
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       severity: json['severity']?.toString() ?? 'medium',
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      detectedAt: json['detected_at'] != null 
-          ? DateTime.parse(json['detected_at'] as String) 
-          : DateTime.now(),
+      detectedAt: parseDetectedAt(json['detected_at']),
       imageUrl: json['image_url'] as String?,
       description: json['description'] as String?,
       verificationCount: json['verification_count'] as int? ?? 1,

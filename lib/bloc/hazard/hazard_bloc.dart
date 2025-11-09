@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:event_safety_app/models/hazard_model.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
@@ -16,6 +17,7 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
     on<LoadHazards>(_onLoadHazards);
     on<DetectHazard>(_onDetectHazard);
     on<SubmitHazard>(_onSubmitHazard);
+    on<SubmitHazardWithImage>(_onSubmitHazardWithImage);
     on<VerifyHazard>(_onVerifyHazard);
     on<CheckNearbyHazards>(_onCheckNearbyHazards);
     on<FilterHazardsByType>(_onFilterHazardsByType);
@@ -117,6 +119,52 @@ class HazardBloc extends Bloc<HazardEvent, HazardState> {
         imageUrl: event.hazard.imageUrl,
         description: event.hazard.description,
       );
+      
+      // Add to local list
+      _allHazards.add(submittedHazard);
+      
+      emit(HazardSubmitted(submittedHazard));
+      
+      // Don't emit HazardLoaded here - let the listener trigger LoadHazards
+      // This ensures the HazardSubmitted state is properly observed
+    } catch (e) {
+      emit(HazardError(e.toString()));
+    }
+  }
+
+  Future<void> _onSubmitHazardWithImage(
+    SubmitHazardWithImage event,
+    Emitter<HazardState> emit,
+  ) async {
+    try {
+      emit(HazardSubmitting());
+      
+      // First, submit the hazard to get an ID
+      var submittedHazard = await _hazardService.reportHazard(
+        type: event.hazard.type,
+        latitude: event.hazard.latitude,
+        longitude: event.hazard.longitude,
+        severity: event.hazard.severity,
+        confidence: event.hazard.confidence,
+        imageUrl: null, // Will be set after upload
+        description: event.hazard.description,
+      );
+      
+      // Upload the image with the hazard ID
+      try {
+        final imageUrl = await _hazardService.uploadHazardImage(
+          submittedHazard.id,
+          event.imagePath,
+        );
+        
+        // Update the hazard with the image URL
+        submittedHazard = submittedHazard.copyWith(imageUrl: imageUrl);
+        
+        debugPrint('✅ Hazard submitted with image: ${submittedHazard.id}, image: $imageUrl');
+      } catch (uploadError) {
+        debugPrint('⚠️ Failed to upload image, but hazard was submitted: $uploadError');
+        // Continue even if image upload fails
+      }
       
       // Add to local list
       _allHazards.add(submittedHazard);

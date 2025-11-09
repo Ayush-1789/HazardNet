@@ -129,6 +129,16 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Widget _buildCameraView(CameraReady state) {
     final controller = state.controller;
+    
+    // Ensure controller is fully initialized before showing preview
+    if (!controller.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryBlue,
+        ),
+      );
+    }
+    
     final previewSize = controller.value.previewSize ?? const Size(640, 480);
 
     return Stack(
@@ -689,6 +699,7 @@ class _CameraScreenState extends State<CameraScreen> {
       );
 
       // Build a HazardModel and submit via HazardBloc
+      // Note: imageUrl will be set after upload in the bloc
       final hazardToSubmit = HazardModel(
         id: capturedHazard.id,
         type: primaryDetection.label,
@@ -697,25 +708,31 @@ class _CameraScreenState extends State<CameraScreen> {
         severity: _determineSeverity(primaryDetection.confidence),
         confidence: primaryDetection.confidence,
         detectedAt: capturedHazard.timestamp,
-        // We don't have a public image URL yet; the API service may accept image upload separately.
-        imageUrl: null,
+        imageUrl: null, // Will be set after upload
         description: null,
         metadata: capturedHazard.sensorSnapshot,
       );
 
-      context.read<HazardBloc>().add(SubmitHazard(hazardToSubmit));
+      // Submit hazard with image path for upload
+      context.read<HazardBloc>().add(SubmitHazardWithImage(
+        hazard: hazardToSubmit,
+        imagePath: capturedHazard.imagePath,
+      ));
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Submitting ${primaryDetection.label} to backend...'),
+          content: Text('Submitting ${primaryDetection.label} with image...'),
           backgroundColor: AppColors.primaryBlue,
           duration: const Duration(seconds: 2),
         ),
       );
 
-      // Delete the local capture after submission
-      context.read<CameraBloc>().add(DeleteCapturedHazard(capturedHazard.id));
+      // NOTE: don't delete the local capture immediately — the upload happens
+      // asynchronously in the HazardBloc. Deleting the file here causes a race
+      // where the upload runs after the file is removed (PathNotFound). The
+      // app will keep the local capture until the user deletes it or a later
+      // cleanup task runs.
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
