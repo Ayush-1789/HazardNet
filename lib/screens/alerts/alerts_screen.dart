@@ -47,8 +47,30 @@ class _AlertsScreenState extends State<AlertsScreen> {
       body: BlocBuilder<AlertsBloc, AlertsState>(
         builder: (context, state) {
           if (state is AlertsLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading alerts...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.grey700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Server may take 30-60s to wake up on first request',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.grey500,
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
