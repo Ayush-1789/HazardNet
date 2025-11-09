@@ -22,9 +22,9 @@ class ModelConfig {
   
   // Input image dimensions (YOLOv8 typically uses 640x640)
   // ⚠️ MUST MATCH YOUR MODEL'S ACTUAL INPUT SIZE!
-  // unified_hazards_int8.tflite: 256x256 input
-  static const int inputWidth = 256;
-  static const int inputHeight = 256;
+  // unified_hazards_int8.tflite: 128x128 input for MAXIMUM FPS (optimized)
+  static const int INPUT_WIDTH = 128;
+  static const int INPUT_HEIGHT = 128;
   
   // Number of detection classes
   // Can't use `const` with `.length` in a compile-time constant expression on
@@ -42,15 +42,15 @@ class ModelConfig {
   
   // Frame skipping for better FPS (buffer every Nth frame)
   // Increasing this reduces CPU work per second and can improve FPS.
-  static const int FRAME_SKIP = 4; // Buffer every 4th frame by default
+  static const int FRAME_SKIP = 15; // Buffer every 15th frame for maximum performance
 
   // Lightweight pre-buffering cadence (store every Nth skipped frame)
   static const int PREBUFFER_EVERY_N = 0; // Disable pre-buffering to reduce overhead
   
   // Buffer configuration for gyro-triggered analysis
-  static const int BUFFER_DURATION_SECONDS = 10; // Maintain 10s of frames in memory
-  static const int BUFFER_MAX_FRAMES = 300; // Roughly 30 FPS * 10 seconds
-  static const int GYRO_ANALYSIS_MAX_FRAMES = 90; // Analyze at most 90 frames per trigger
+  static const int BUFFER_DURATION_SECONDS = 5; // Maintain 5s of frames in memory (was 10)
+  static const int BUFFER_MAX_FRAMES = 150; // Roughly 30 FPS * 5 seconds (was 300)
+  static const int GYRO_ANALYSIS_MAX_FRAMES = 45; // Analyze at most 45 frames per trigger (was 90)
   static const double GYRO_MIN_CONFIDENCE = 0.35; // Minimum confidence to persist hazard
   
   // ============================================

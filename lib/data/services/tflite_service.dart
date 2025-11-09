@@ -228,9 +228,18 @@ class TFLiteService {
     return detections;
   }
 
-  /// Preprocess camera image for model input
+  /// Preprocess camera image for model input - OPTIMIZED with direct downsampling
   dynamic _preprocessCameraImage(CameraImage cameraImage) {
-    final img.Image? rgbImage = _convertYUV420ToImageFast(cameraImage);
+    final int targetWidth = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
+    final int targetHeight = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
+    
+    // OPTIMIZATION: Convert YUV directly to target resolution (skip full-res conversion)
+    final img.Image? rgbImage = _convertYUV420ToImageDownsampled(
+      cameraImage, 
+      targetWidth: targetWidth, 
+      targetHeight: targetHeight
+    );
+    
     if (rgbImage == null) {
       throw Exception('Failed to convert camera image');
     }
@@ -313,38 +322,47 @@ class TFLiteService {
   }
 
   /// Convert a [CameraImage] to JPEG bytes for storage or sharing.
+  /// OPTIMIZED: Uses downsampling to avoid processing full resolution
   Uint8List? convertCameraImageToJpeg(
     CameraImage cameraImage, {
     int quality = AppConstants.imageQuality,
     bool forBuffering = false,
   }) {
-    final img.Image? rgb = _convertYUV420ToImageFast(cameraImage);
-    if (rgb == null) {
-      return null;
-    }
-    img.Image processed = rgb;
-    
     // For buffering, use much lower resolution to save CPU time
     final int maxWidth = forBuffering ? 480 : AppConstants.maxImageWidth;
     final int maxHeight = forBuffering ? 360 : AppConstants.maxImageHeight;
     final int jpegQuality = forBuffering ? 40 : quality;
     
-    final bool exceedsWidth = rgb.width > maxWidth;
-    final bool exceedsHeight = rgb.height > maxHeight;
+    // Calculate target dimensions maintaining aspect ratio
+    final int sourceWidth = cameraImage.width;
+    final int sourceHeight = cameraImage.height;
+    
+    int targetWidth = sourceWidth;
+    int targetHeight = sourceHeight;
+    
+    final bool exceedsWidth = sourceWidth > maxWidth;
+    final bool exceedsHeight = sourceHeight > maxHeight;
+    
     if (exceedsWidth || exceedsHeight) {
-      final double widthScale = maxWidth / rgb.width;
-      final double heightScale = maxHeight / rgb.height;
+      final double widthScale = maxWidth / sourceWidth;
+      final double heightScale = maxHeight / sourceHeight;
       final double scale = math.min(1.0, math.min(widthScale, heightScale));
-      final int targetWidth = (rgb.width * scale).round().clamp(1, maxWidth);
-      final int targetHeight = (rgb.height * scale).round().clamp(1, maxHeight);
-      processed = img.copyResize(
-        rgb,
-        width: targetWidth,
-        height: targetHeight,
-        interpolation: img.Interpolation.linear,
-      );
+      targetWidth = (sourceWidth * scale).round().clamp(1, maxWidth);
+      targetHeight = (sourceHeight * scale).round().clamp(1, maxHeight);
     }
-    return Uint8List.fromList(img.encodeJpg(processed, quality: jpegQuality));
+    
+    // OPTIMIZATION: Convert directly to target resolution (skip full-res conversion)
+    final img.Image? rgb = _convertYUV420ToImageDownsampled(
+      cameraImage,
+      targetWidth: targetWidth,
+      targetHeight: targetHeight,
+    );
+    
+    if (rgb == null) {
+      return null;
+    }
+    
+    return Uint8List.fromList(img.encodeJpg(rgb, quality: jpegQuality));
   }
 
   /// Convert CameraImage to img.Image with support for multiple formats
@@ -489,6 +507,140 @@ class TFLiteService {
       return image;
     } catch (e) {
       print('❌ Error converting YUV420: $e');
+      return null;
+    }
+  }
+
+  /// OPTIMIZED: Convert YUV420 directly to target resolution (skip full-res conversion)
+  /// This dramatically improves FPS by avoiding processing millions of pixels
+  img.Image? _convertYUV420ToImageDownsampled(
+    CameraImage cameraImage, {
+    required int targetWidth,
+    required int targetHeight,
+  }) {
+    try {
+      final int width = cameraImage.width;
+      final int height = cameraImage.height;
+      final int planesCount = cameraImage.planes.length;
+      
+      // Calculate downsample factor
+      final int skipX = (width / targetWidth).floor().clamp(1, 8);
+      final int skipY = (height / targetHeight).floor().clamp(1, 8);
+      
+      print('⚡ Downsampling: ${width}x${height} → ${targetWidth}x${targetHeight} (skip $skipX x $skipY)');
+      
+      // Handle BGRA format (1 plane)
+      if (planesCount == 1) {
+        return _convertBGRAToImageDownsampled(cameraImage, skipX, skipY, targetWidth, targetHeight);
+      }
+      
+      // Handle YUV420 format (3 planes) - OPTIMIZED
+      if (planesCount >= 3) {
+        final yPlane = cameraImage.planes[0];
+        final uPlane = cameraImage.planes[1];
+        final vPlane = cameraImage.planes[2];
+        
+        final yBytes = yPlane.bytes;
+        final uBytes = uPlane.bytes;
+        final vBytes = vPlane.bytes;
+        
+        if (yBytes.isEmpty || uBytes.isEmpty || vBytes.isEmpty) {
+          print('❌ Invalid camera image: empty plane data');
+          return null;
+        }
+        
+        final image = img.Image(width: targetWidth, height: targetHeight);
+        
+        final int yRowStride = yPlane.bytesPerRow;
+        final int uvRowStride = uPlane.bytesPerRow;
+        final int uvPixelStride = uPlane.bytesPerPixel ?? 1;
+        
+        // Process downsampled pixels only
+        for (int th = 0; th < targetHeight; th++) {
+          final int h = th * skipY;
+          if (h >= height) break;
+          
+          for (int tw = 0; tw < targetWidth; tw++) {
+            final int w = tw * skipX;
+            if (w >= width) break;
+            
+            final yIndex = h * yRowStride + w;
+            if (yIndex >= yBytes.length) continue;
+            
+            final uvRow = h ~/ 2;
+            final uvCol = w ~/ 2;
+            final uvIndex = uvRow * uvRowStride + uvCol * uvPixelStride;
+            
+            if (uvIndex >= uBytes.length || uvIndex >= vBytes.length) continue;
+            
+            final int yValue = yBytes[yIndex];
+            final int uValue = uBytes[uvIndex];
+            final int vValue = vBytes[uvIndex];
+            
+            // YUV to RGB conversion
+            final double vFactor = 1.402 * (vValue - 128);
+            final double uFactor = 1.772 * (uValue - 128);
+            final double uvFactor = 0.344136 * (uValue - 128) + 0.714136 * (vValue - 128);
+            
+            final int r = (yValue + vFactor).round().clamp(0, 255);
+            final int g = (yValue - uvFactor).round().clamp(0, 255);
+            final int b = (yValue + uFactor).round().clamp(0, 255);
+            
+            image.setPixelRgb(tw, th, r, g, b);
+          }
+        }
+        
+        return image;
+      }
+      
+      print('❌ Unsupported camera format: $planesCount planes');
+      return null;
+    } catch (e) {
+      print('❌ Error in downsampled conversion: $e');
+      return null;
+    }
+  }
+  
+  /// OPTIMIZED: Convert BGRA directly to target resolution
+  img.Image? _convertBGRAToImageDownsampled(
+    CameraImage cameraImage,
+    int skipX,
+    int skipY,
+    int targetWidth,
+    int targetHeight,
+  ) {
+    try {
+      final int width = cameraImage.width;
+      final int height = cameraImage.height;
+      final bytes = cameraImage.planes[0].bytes;
+      final int bytesPerPixel = cameraImage.planes[0].bytesPerPixel ?? 4;
+      final int bytesPerRow = cameraImage.planes[0].bytesPerRow;
+      
+      final image = img.Image(width: targetWidth, height: targetHeight);
+      
+      for (int th = 0; th < targetHeight; th++) {
+        final int h = th * skipY;
+        if (h >= height) break;
+        
+        for (int tw = 0; tw < targetWidth; tw++) {
+          final int w = tw * skipX;
+          if (w >= width) break;
+          
+          final int pixelIndex = h * bytesPerRow + w * bytesPerPixel;
+          
+          if (pixelIndex + 3 < bytes.length) {
+            final b = bytes[pixelIndex];
+            final g = bytes[pixelIndex + 1];
+            final r = bytes[pixelIndex + 2];
+            
+            image.setPixelRgb(tw, th, r, g, b);
+          }
+        }
+      }
+      
+      return image;
+    } catch (e) {
+      print('❌ Error converting downsampled BGRA: $e');
       return null;
     }
   }

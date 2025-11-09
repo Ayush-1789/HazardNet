@@ -53,16 +53,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
+      print('🔐 [AUTH] Attempting login for: ${event.email}');
+      
       // Call backend API for login
       final user = await _authService.login(
         email: event.email,
         password: event.password,
       );
       
+      print('✅ [AUTH] Login successful for: ${user.email}');
       _currentUser = user;
       emit(Authenticated(user));
     } catch (e) {
-      emit(AuthError('Login failed: ${e.toString()}'));
+      print('❌ [AUTH] Login failed: ${e.toString()}');
+      
+      // Provide user-friendly error messages
+      String errorMessage = 'Login failed';
+      if (e.toString().contains('timeout')) {
+        errorMessage = 'Connection timeout. Please check your internet and try again.';
+      } else if (e.toString().contains('401') || e.toString().contains('invalid credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (e.toString().contains('404')) {
+        errorMessage = 'Server not found. Please check your connection.';
+      } else if (e.toString().contains('500')) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (e.toString().contains('network') || e.toString().contains('socket')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else {
+        errorMessage = 'Login failed. ${e.toString()}';
+      }
+      
+      emit(AuthError(errorMessage));
     }
   }
   
