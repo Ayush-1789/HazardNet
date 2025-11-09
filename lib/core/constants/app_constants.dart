@@ -125,6 +125,9 @@ class AppConstants {
   // Make sure to call `await dotenv.load()` in `main()` before using this value.
   static String get elevenLabsApiKey => dotenv.env['ELEVENLABS_API_KEY'] ?? '';
   
+  // Google Maps API Key
+  static const String googleMapsApiKey = 'AIzaSyA3JE25gHOK7B7Kd5LkAba0RLQv74pyTak';
+  
   // Error Messages
   static const String errorNoInternet = 'No internet connection';
   static const String errorLocationPermission = 'Location permission required';
