@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'dart:ui' as ui;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 import 'package:event_safety_app/core/theme/app_colors.dart';
+import 'package:event_safety_app/core/constants/app_constants.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_bloc.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_event.dart';
 import 'package:event_safety_app/bloc/hazard/hazard_state.dart';
@@ -13,7 +13,7 @@ import 'package:event_safety_app/bloc/location/location_state.dart';
 import 'package:event_safety_app/bloc/auth/auth_bloc.dart';
 import 'package:event_safety_app/bloc/auth/auth_state.dart';
 
-/// Map screen showing hazards and user location using OpenStreetMap
+/// Map screen showing hazards and user location using Google Maps
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -22,9 +22,11 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  final MapController _mapController = MapController();
+  GoogleMapController? _mapController;
   LatLng? _currentLocation;
   String? _currentUserId;
+  final Set<Marker> _markers = {};
+  MapType _currentMapType = MapType.normal;
 
   @override
   void initState() {
@@ -41,6 +43,156 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+    // Set dark mode style if needed
+    if (Theme.of(context).brightness == Brightness.dark) {
+      _setDarkMapStyle();
+    }
+  }
+
+  Future<void> _setDarkMapStyle() async {
+    if (_mapController == null) return;
+    const String darkMapStyle = '''
+    [
+      {
+        "elementType": "geometry",
+        "stylers": [{"color": "#242f3e"}]
+      },
+      {
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#746855"}]
+      },
+      {
+        "elementType": "labels.text.stroke",
+        "stylers": [{"color": "#242f3e"}]
+      },
+      {
+        "featureType": "administrative.locality",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#d59563"}]
+      },
+      {
+        "featureType": "poi",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#d59563"}]
+      },
+      {
+        "featureType": "poi.park",
+        "elementType": "geometry",
+        "stylers": [{"color": "#263c3f"}]
+      },
+      {
+        "featureType": "poi.park",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#6b9a76"}]
+      },
+      {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [{"color": "#38414e"}]
+      },
+      {
+        "featureType": "road",
+        "elementType": "geometry.stroke",
+        "stylers": [{"color": "#212a37"}]
+      },
+      {
+        "featureType": "road",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#9ca5b3"}]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "geometry",
+        "stylers": [{"color": "#746855"}]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [{"color": "#1f2835"}]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#f3d19c"}]
+      },
+      {
+        "featureType": "transit",
+        "elementType": "geometry",
+        "stylers": [{"color": "#2f3948"}]
+      },
+      {
+        "featureType": "transit.station",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#d59563"}]
+      },
+      {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [{"color": "#17263c"}]
+      },
+      {
+        "featureType": "water",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#515c6d"}]
+      },
+      {
+        "featureType": "water",
+        "elementType": "labels.text.stroke",
+        "stylers": [{"color": "#17263c"}]
+      }
+    ]
+    ''';
+    await _mapController!.setMapStyle(darkMapStyle);
+  }
+
+  void _updateMarkers(List<dynamic> hazards) {
+    setState(() {
+      _markers.clear();
+
+      // Add user location marker
+      if (_currentLocation != null) {
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('user_location'),
+            position: _currentLocation!,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            infoWindow: const InfoWindow(title: 'Your Location'),
+          ),
+        );
+      }
+
+      // Add hazard markers
+      for (var hazard in hazards) {
+        final isCurrentUser = hazard.reportedBy == _currentUserId;
+        final hue = isCurrentUser 
+            ? BitmapDescriptor.hueBlue  // User's own hazards
+            : BitmapDescriptor.hueOrange; // Other users' hazards
+
+        _markers.add(
+          Marker(
+            markerId: MarkerId(hazard.id),
+            position: LatLng(hazard.latitude, hazard.longitude),
+            icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+            infoWindow: InfoWindow(
+              title: hazard.typeName,
+              snippet: hazard.isVerified ? '✓ Verified' : 'Unverified',
+              onTap: () => _showHazardDetails(hazard),
+            ),
+            onTap: () => _showHazardDetails(hazard),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
@@ -48,6 +200,19 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         title: const Text('Hazard Map'),
         actions: [
+          IconButton(
+            icon: Icon(_currentMapType == MapType.normal 
+                ? Icons.satellite 
+                : Icons.map),
+            onPressed: () {
+              setState(() {
+                _currentMapType = _currentMapType == MapType.normal 
+                    ? MapType.satellite 
+                    : MapType.normal;
+              });
+            },
+            tooltip: 'Toggle Map Type',
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
@@ -57,7 +222,11 @@ class _MapScreenState extends State<MapScreen> {
           IconButton(
             icon: const Icon(Icons.my_location),
             onPressed: () {
-              // TODO: Center on user location
+              if (_currentLocation != null && _mapController != null) {
+                _mapController!.animateCamera(
+                  CameraUpdate.newLatLngZoom(_currentLocation!, 15),
+                );
+              }
             },
           ),
         ],
@@ -72,153 +241,41 @@ class _MapScreenState extends State<MapScreen> {
               );
             });
             // Center map on user location when first loaded
-            if (_currentLocation != null) {
-              _mapController.move(_currentLocation!, 15.0);
+            if (_currentLocation != null && _mapController != null) {
+              _mapController!.animateCamera(
+                CameraUpdate.newLatLngZoom(_currentLocation!, 15),
+              );
             }
           }
         },
         child: Stack(
           children: [
-            // OpenStreetMap with markers
+            // Google Maps with markers
             BlocBuilder<HazardBloc, HazardState>(
               builder: (context, hazardState) {
-                final markers = <Marker>[];
-                
-                // Add user location marker
-                if (_currentLocation != null) {
-                  markers.add(
-                    Marker(
-                      point: _currentLocation!,
-                      width: 40,
-                      height: 40,
-                      child: Icon(
-                        Icons.my_location,
-                        color: AppColors.primaryBlue,
-                        size: 40,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                
-                // Add hazard markers
+                // Update markers when hazards change
                 if (hazardState is HazardLoaded) {
-                  for (var hazard in hazardState.hazards) {
-                    // Check if hazard was reported by current user
-                    final isCurrentUser = hazard.reportedBy == _currentUserId;
-                    final markerColor = isCurrentUser 
-                        ? AppColors.primaryBlue  // User's own hazards
-                        : AppColors.accentOrange; // Other users' hazards
-                    
-                    markers.add(
-                      Marker(
-                        point: LatLng(hazard.latitude, hazard.longitude),
-                        width: 50,
-                        height: 50,
-                        child: GestureDetector(
-                          onTap: () {
-                            _showHazardDetails(hazard);
-                          },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Pin shadow
-                              Positioned(
-                                bottom: 0,
-                                child: Container(
-                                  width: 20,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black26,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                              // Pin marker
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: markerColor,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 3,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: markerColor.withOpacity(0.4),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Icon(
-                                      _getHazardIcon(hazard.type),
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  // Pin point
-                                  CustomPaint(
-                                    size: const Size(10, 8),
-                                    painter: _PinPointerPainter(markerColor),
-                                  ),
-                                ],
-                              ),
-                              // Verification badge for verified hazards
-                              if (hazard.isVerified)
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.secondaryGreen,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 10,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
+                  _updateMarkers(hazardState.hazards);
                 }
                 
-                return FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    initialCenter: _currentLocation ?? const LatLng(28.6139, 77.2090), // Default to Delhi
-                    initialZoom: 15.0,
-                    minZoom: 5.0,
-                    maxZoom: 18.0,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.all,
-                    ),
+                return GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  initialCameraPosition: CameraPosition(
+                    target: _currentLocation ?? const LatLng(28.6139, 77.2090), // Default to Delhi
+                    zoom: 15.0,
                   ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.hazardnet.event_safety_app',
-                      tileBuilder: isDark ? _darkModeTileBuilder : null,
-                    ),
-                    MarkerLayer(markers: markers),
-                  ],
+                  mapType: _currentMapType,
+                  markers: _markers,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false, // We have our own button
+                  compassEnabled: true,
+                  mapToolbarEnabled: false,
+                  zoomControlsEnabled: false,
+                  minMaxZoomPreference: const MinMaxZoomPreference(5.0, 20.0),
+                  onLongPress: (LatLng position) {
+                    // TODO: Add new hazard at long-press location
+                    _showAddHazardDialog(position);
+                  },
                 );
               },
             ),
@@ -397,16 +454,34 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Dark mode tile builder to invert map colors
-  Widget _darkModeTileBuilder(BuildContext context, Widget tileWidget, TileImage tile) {
-    return ColorFiltered(
-      colorFilter: const ColorFilter.matrix([
-        -1,  0,  0, 0, 255,
-         0, -1,  0, 0, 255,
-         0,  0, -1, 0, 255,
-         0,  0,  0, 1,   0,
-      ]),
-      child: tileWidget,
+  // Show dialog to add a new hazard at the given location
+  void _showAddHazardDialog(LatLng position) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Hazard'),
+        content: Text(
+          'Report a hazard at this location?\n\nLat: ${position.latitude.toStringAsFixed(5)}\nLng: ${position.longitude.toStringAsFixed(5)}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Navigate to hazard reporting screen with pre-filled location
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Feature coming soon: Report hazard at this location'),
+                ),
+              );
+            },
+            child: const Text('Report'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -722,31 +797,6 @@ class _MapScreenState extends State<MapScreen> {
       return '${difference.inDays}d ago';
     }
   }
-}
-
-// Custom painter for pin pointer
-class _PinPointerPainter extends CustomPainter {
-  final Color color;
-
-  _PinPointerPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = ui.Path()
-      ..moveTo(size.width / 2, size.height)
-      ..lineTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Hazard list item widget
