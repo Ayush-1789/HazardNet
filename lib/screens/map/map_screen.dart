@@ -605,7 +605,7 @@ class _MapScreenState extends State<MapScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha:0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -845,7 +845,7 @@ class _MapScreenState extends State<MapScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: _getSeverityColor(hazard.severity).withOpacity(0.1),
+                              color: _getSeverityColor(hazard.severity).withValues(alpha:0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -903,7 +903,7 @@ class _MapScreenState extends State<MapScreen> {
                             errorBuilder: (context, error, stackTrace) => Container(
                               height: 180,
                               decoration: BoxDecoration(
-                                color: _getSeverityColor(hazard.severity).withOpacity(0.1),
+                                color: _getSeverityColor(hazard.severity).withValues(alpha:0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
@@ -930,7 +930,7 @@ class _MapScreenState extends State<MapScreen> {
                               return Container(
                                 height: 180,
                                 decoration: BoxDecoration(
-                                  color: _getSeverityColor(hazard.severity).withOpacity(0.1),
+                                  color: _getSeverityColor(hazard.severity).withValues(alpha:0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
@@ -1110,9 +1110,9 @@ class _HazardListItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _getSeverityColor().withOpacity(0.1),
+        color: _getSeverityColor().withValues(alpha:0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getSeverityColor().withOpacity(0.3)),
+        border: Border.all(color: _getSeverityColor().withValues(alpha:0.3)),
       ),
       child: Row(
         children: [

@@ -100,7 +100,7 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success ? 'Test successful!' : 'Test failed'),
-          backgroundColor: success ? AppColors.success : AppColors.danger,
+          backgroundColor: success ? AppColors.success : AppColors.error,
         ),
       );
     }
@@ -134,7 +134,7 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
                   title: const Text('Enable Alerts'),
                   subtitle: const Text('Receive proximity alerts for hazards'),
                   value: _alertsEnabled,
-                  activeColor: AppColors.primaryBlue,
+                  activeThumbColor: AppColors.primaryBlue,
                   onChanged: (value) {
                     setState(() => _alertsEnabled = value);
                   },
@@ -195,7 +195,7 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
                   title: const Text('Enable Voice Alerts'),
                   subtitle: const Text('Speak alerts using text-to-speech'),
                   value: _ttsEnabled,
-                  activeColor: AppColors.primaryBlue,
+                  activeThumbColor: AppColors.primaryBlue,
                   onChanged: _alertsEnabled ? (value) {
                     setState(() => _ttsEnabled = value);
                   } : null,
@@ -284,7 +284,7 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
+              color: AppColors.warning.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.warning),
             ),
@@ -335,7 +335,7 @@ class _AlertSettingsScreenState extends State<AlertSettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

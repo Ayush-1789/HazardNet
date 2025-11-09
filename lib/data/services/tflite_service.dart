@@ -43,7 +43,7 @@ class TFLiteService {
   /// Initialize the TFLite interpreter
   Future<void> loadModel() async {
     try {
-      print('🔄 Loading model: ${ModelConfig.MODEL_PATH}');
+      print('🔄 Loading model: ${ModelConfig.modelPath}');
 
       Interpreter? interpreter;
 
@@ -55,7 +55,7 @@ class TFLiteService {
           gpuOptions.addDelegate(_gpuDelegate!);
 
           interpreter = await Interpreter.fromAsset(
-            ModelConfig.MODEL_PATH,
+            ModelConfig.modelPath,
             options: gpuOptions,
           );
 
@@ -81,7 +81,7 @@ class TFLiteService {
         }
 
         interpreter = await Interpreter.fromAsset(
-          ModelConfig.MODEL_PATH,
+          ModelConfig.modelPath,
           options: fallbackOptions,
         );
       }
@@ -248,8 +248,8 @@ class TFLiteService {
 
   /// Preprocess generic RGB image for interpreter input
   dynamic _preprocessRgbImage(img.Image rgbImage) {
-    final int targetWidth = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
-    final int targetHeight = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
+    final int targetWidth = _modelInputWidth ?? ModelConfig.inputWidth;
+    final int targetHeight = _modelInputHeight ?? ModelConfig.inputHeight;
 
     final double sourceAspect = rgbImage.width / rgbImage.height;
     final double targetAspect = targetWidth / targetHeight;
@@ -671,8 +671,8 @@ class TFLiteService {
         _hasLoggedOutputInfo = true;
       }
 
-      final int inputWidthRef = _modelInputWidth ?? ModelConfig.INPUT_WIDTH;
-      final int inputHeightRef = _modelInputHeight ?? ModelConfig.INPUT_HEIGHT;
+      final int inputWidthRef = _modelInputWidth ?? ModelConfig.inputWidth;
+      final int inputHeightRef = _modelInputHeight ?? ModelConfig.inputHeight;
 
       // Normalize predictions into List<List<double>> where each inner list is a prediction [x,y,w,h,...]
       final List<List<double>> preds = [];

@@ -339,7 +339,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       subtitle: Text(subtitle),
       value: value,
       onChanged: onChanged,
-  activeColor: AppColors.primaryBlue,
+  activeThumbColor: AppColors.primaryBlue,
     );
   }
 
@@ -366,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       value: value,
       groupValue: groupValue,
       onChanged: onChanged,
-  activeColor: AppColors.primaryBlue,
+  activeThumbColor: AppColors.primaryBlue,
     );
   }
 

@@ -50,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.primaryBlue.withValues(alpha:0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -67,7 +67,7 @@ class ProfileScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha:0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -108,7 +108,7 @@ class ProfileScreen extends StatelessWidget {
                   user.email,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha:0.9),
                   ),
                 ).animate().fadeIn(delay: 300.ms),
 
@@ -121,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha:0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -377,7 +377,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.grey300.withOpacity(0.5),
+            color: AppColors.grey300.withValues(alpha:0.5),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -436,7 +436,7 @@ class _MenuItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.grey300.withOpacity(0.3),
+            color: AppColors.grey300.withValues(alpha:0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -447,7 +447,7 @@ class _MenuItem extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withOpacity(0.1),
+            color: AppColors.primaryBlue.withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
