@@ -43,7 +43,6 @@ class DetectorIsolate {
   bool _disposed = false;
   int _sequence = 0;
   int _inflight = 0;
-  Completer<void>? _idleCompleter;
 
   Stream<DetectionPacket> get results => _resultController.stream;
   bool get hasCapacity => !_disposed && _inflight < _maxInflight;
@@ -115,36 +114,6 @@ class DetectorIsolate {
     return true;
   }
 
-  /// Run a detection synchronously on the isolate and await the result.
-  Future<List<Detection>> runOnDemand(Uint8List jpegBytes) async {
-    if (_disposed) return const [];
-    final responsePort = ReceivePort();
-    final seq = _sequence++;
-    _commandPort.send(_RunInferenceMessage(
-      bytes: jpegBytes,
-      sequenceId: seq,
-      timestampMillis: DateTime.now().millisecondsSinceEpoch,
-      replyPort: responsePort.sendPort,
-    ).toMap());
-    final message = await responsePort.first;
-    responsePort.close();
-    return _decodeDetections(message as Map<String, dynamic>);
-  }
-
-  /// Await until all inflight streaming detections have completed.
-  Future<void> waitUntilIdle({Duration? timeout}) async {
-    if (_inflight == 0) return;
-    _idleCompleter ??= Completer<void>();
-    try {
-      await (_idleCompleter!.future.timeout(
-        timeout ?? ModelConfig.DETECTOR_IDLE_TIMEOUT,
-        onTimeout: () {},
-      ));
-    } catch (_) {
-      // Ignore timeout errors; UI should remain responsive regardless.
-    }
-  }
-
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
@@ -176,10 +145,6 @@ class DetectorIsolate {
     _inflight = _inflight - 1;
     if (_inflight < 0) {
       _inflight = 0;
-    }
-    if (_inflight == 0) {
-      _idleCompleter?..complete();
-      _idleCompleter = null;
     }
     _resultController.add(packet);
   }

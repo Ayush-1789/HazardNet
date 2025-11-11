@@ -52,18 +52,8 @@ class ModelConfig {
   // Increasing this reduces CPU work per second and can improve FPS.
   static const int FRAME_SKIP = 4; // Capture every 4th frame to cut conversion workload
 
-  // Lightweight pre-buffering cadence (store every Nth processed frame)
-  static const int PREBUFFER_EVERY_N = 6; // Capture one buffered frame for gyro analysis every ~6 frames
-
   // Background detection pipeline tuning
   static const int MAX_INFLIGHT_DETECTIONS = 2; // Number of frames detector can work on simultaneously
-  static const Duration DETECTOR_IDLE_TIMEOUT = Duration(milliseconds: 150);
-  
-  // Buffer configuration for gyro-triggered analysis
-  static const int BUFFER_DURATION_SECONDS = 10; // Maintain 10s of frames in memory
-  static const int BUFFER_MAX_FRAMES = 220; // ~22 FPS * 10 seconds with headroom
-  static const int GYRO_ANALYSIS_MAX_FRAMES = 55; // Analyze at most 55 frames per trigger
-  static const double GYRO_MIN_CONFIDENCE = 0.35; // Minimum confidence to persist hazard
   
   // ============================================
   // Class Labels

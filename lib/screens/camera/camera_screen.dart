@@ -95,7 +95,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     const SnackBar(
-                      content: Text('Gyroscope trigger captured a hazard clip'),
+                      content: Text('Hazard capture saved'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );

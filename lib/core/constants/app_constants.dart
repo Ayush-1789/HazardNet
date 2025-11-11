@@ -76,13 +76,7 @@ class AppConstants {
   static const String severityCritical = 'critical';
   
   // Sensor Settings
-  static const int gyroscopeUpdateIntervalMs = 100;
-  static const int accelerometerUpdateIntervalMs = 100;
-  static const double impactThresholdG = 2.0; // G-force threshold for impact detection
-  static const double gyroscopeImpactThresholdRadPerSec = 0.7; // Lowered for easier detection (was 3.5)
-  static const int gyroCaptureWindowSeconds = 5; // How far back we keep buffered frames
-  static const int gyroTriggerCooldownSeconds = 3; // Cooldown before another capture can fire
-  static const int maxStoredCaptures = 20; // Limit stored auto captures
+  static const int maxStoredCaptures = 20; // Limit stored captures
   
   // Camera Settings
   // Maximum performance - lowest quality for best FPS
