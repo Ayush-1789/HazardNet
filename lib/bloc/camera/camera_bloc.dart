@@ -13,6 +13,7 @@ import 'package:event_safety_app/bloc/camera/camera_state.dart';
 import 'package:event_safety_app/bloc/location/location_bloc.dart';
 import 'package:event_safety_app/core/constants/model_config.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
+import 'package:event_safety_app/data/services/detector_isolate.dart';
 import 'package:event_safety_app/data/services/tflite_service.dart';
 import 'package:event_safety_app/data/services/captured_hazard_store.dart';
 import 'package:event_safety_app/data/services/gyro_monitor_service.dart';
@@ -32,6 +33,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   bool _imageStreamActive = false;
 
   final List<_BufferedFrame> _frameBuffer = [];
+  DetectorIsolate? _detectorIsolate;
+  StreamSubscription<DetectionPacket>? _detectorSubscription;
   StreamSubscription<SensorDataModel>? _gyroSubscription;
   final Uuid _uuid = const Uuid();
   int _frameCount = 0;
@@ -39,6 +42,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   bool _captureInProgress = false;
   DateTime? _lastFpsUpdate;
   int _framesProcessedSinceLastUpdate = 0;
+  int _latestDetectionSequence = -1;
+  bool _allowRealtimeDetections = false;
+  bool _loggedDetectorBackpressure = false;
+  int _bufferSampleCounter = 0;
 
   CameraBloc({
     required TFLiteService tfliteService,
@@ -67,11 +74,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   Future<void> _onInitializeCamera(InitializeCamera event, Emitter<CameraState> emit) async {
     try {
       emit(CameraLoading());
-      await _ensureModelLoaded();
       final description = _availableCameras[_currentCameraIndex];
       _controller = CameraController(
         description,
-        ResolutionPreset.medium,  // Balance quality and performance
+        ResolutionPreset.low,  // Prioritize FPS for analysis stream
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -85,11 +91,14 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   Future<void> _onStartDetection(StartDetection event, Emitter<CameraState> emit) async {
     if (state is! CameraReady) return;
     try {
-      await _ensureModelLoaded();
+      await _ensureDetectorInitialized();
       _isDetecting = true;
+      _allowRealtimeDetections = true;
       _frameCount = 0;
       _framesProcessedSinceLastUpdate = 0;
       _lastFpsUpdate = DateTime.now();
+      _latestDetectionSequence = -1;
+      _bufferSampleCounter = 0;
       
       _gyroMonitor.startMonitoring();
       _gyroSubscription = _gyroMonitor.impactStream.listen((sensorData) {
@@ -97,7 +106,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       });
       await _startImageStream();
       if (state is CameraReady) {
-        emit((state as CameraReady).copyWith(isDetecting: true, fps: 0.0, framesProcessed: 0));
+        emit((state as CameraReady).copyWith(
+          isDetecting: true,
+          fps: 0.0,
+          framesProcessed: 0,
+          detections: const [],
+        ));
       }
     } catch (e) {
       emit(CameraError('Failed to start detection: ${e.toString()}'));
@@ -106,6 +120,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   Future<void> _onStopDetection(StopDetection event, Emitter<CameraState> emit) async {
     _isDetecting = false;
+    _allowRealtimeDetections = false;
+    _latestDetectionSequence = -1;
     await _gyroSubscription?.cancel();
     _gyroSubscription = null;
     _gyroMonitor.stopMonitoring();
@@ -113,13 +129,19 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       await _controller?.stopImageStream();
       _imageStreamActive = false;
     }
-  _frameBuffer.clear();
+    _frameBuffer.clear();
     _frameCount = 0;
     _framesProcessedSinceLastUpdate = 0;
     _lastFpsUpdate = null;
+    _bufferSampleCounter = 0;
     
     if (state is CameraReady) {
-      emit((state as CameraReady).copyWith(isDetecting: false, fps: 0.0, framesProcessed: 0));
+      emit((state as CameraReady).copyWith(
+        isDetecting: false,
+        fps: 0.0,
+        framesProcessed: 0,
+        detections: const [],
+      ));
     }
   }
 
@@ -130,6 +152,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   _framesProcessedSinceLastUpdate += event.frameSpan;
     
     final now = DateTime.now();
+    final capturedAt = event.capturedAt;
     
     // Update FPS display every 500ms
     if (_lastFpsUpdate == null || now.difference(_lastFpsUpdate!).inMilliseconds >= 500) {
@@ -149,9 +172,14 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
     
     // Convert CameraImage to JPEG quickly using optimized downsampling
-    // Add to buffer (already converted JPEG bytes)
+    // Add to buffer (already converted JPEG bytes) if requested
     final jpegBytes = event.imageData as Uint8List;
-    _frameBuffer.add(_BufferedFrame(bytes: jpegBytes, timestamp: now));
+    if (event.saveToBuffer) {
+      _frameBuffer.add(_BufferedFrame(bytes: jpegBytes, timestamp: capturedAt));
+    }
+    if (event.enqueueForDetection) {
+      _sendFrameToDetector(jpegBytes, capturedAt);
+    }
     
     // Lazy pruning every 15 frames
     if (_frameCount % 15 == 0) {
@@ -174,79 +202,93 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   }
   
   Future<void> _processGyroDetection(GyroImpactDetected event) async {
+    await _ensureDetectorInitialized();
     final frames = _frameBuffer.toList(growable: false);
     if (frames.isEmpty) return;
-    
-    // Analyze frames from the buffer to find the best pothole image
-    // (pothole was visible BEFORE the impact, not during)
-    final int maxFrames = math.min(frames.length, ModelConfig.GYRO_ANALYSIS_MAX_FRAMES);
-    final int step = math.max(1, frames.length ~/ maxFrames);
-    
-    int processed = 0;
-    double bestConfidence = 0;
-    List<Detection> bestDetections = const [];
-    _BufferedFrame? bestFrame;
-    
-    // Scan backward through buffer to find best detection
-    for (int i = frames.length - 1; i >= 0 && processed < maxFrames; i -= step) {
-      final frame = frames[i];
-      
-      try {
-        // Run detection on buffered frame
-        final detections = await _tfliteService.detectObjectsFromJpeg(frame.bytes);
-        
-        final filtered = detections.where((d) => d.confidence >= ModelConfig.GYRO_MIN_CONFIDENCE).toList();
-        
-        if (filtered.isNotEmpty) {
-          final topDetection = filtered.reduce((a, b) => a.confidence >= b.confidence ? a : b);
-          if (topDetection.confidence > bestConfidence) {
-            bestConfidence = topDetection.confidence;
-            bestDetections = filtered;
-            bestFrame = frame;
-          }
-        }
-      } catch (e) {
-        debugPrint('Detection error on frame: $e');
-      }
-      
-      processed++;
-      
-      // Yield to event loop every 5 frames to keep UI responsive
-      if (processed % 5 == 0) {
-        await Future.delayed(const Duration(milliseconds: 1));
-      }
+
+    final bool resumeRealtime = _allowRealtimeDetections && _isDetecting;
+    if (resumeRealtime) {
+      _allowRealtimeDetections = false;
+      await _detectorIsolate?.waitUntilIdle();
     }
+
+    try {
     
-    if (bestFrame != null && bestDetections.isNotEmpty) {
-      try {
-        // Draw bounding boxes on the best frame
-        final annotatedImage = _tfliteService.drawDetectionsOnJpeg(
-          bestFrame.bytes,
-          bestDetections,
-        );
+      // Analyze frames from the buffer to find the best pothole image
+      // (pothole was visible BEFORE the impact, not during)
+      final int maxFrames = math.min(frames.length, ModelConfig.GYRO_ANALYSIS_MAX_FRAMES);
+      final int step = math.max(1, frames.length ~/ maxFrames);
+      
+      int processed = 0;
+      double bestConfidence = 0;
+      List<Detection> bestDetections = const [];
+      _BufferedFrame? bestFrame;
+      
+      // Scan backward through buffer to find best detection
+      for (int i = frames.length - 1; i >= 0 && processed < maxFrames; i -= step) {
+        final frame = frames[i];
         
-        final imageToSave = annotatedImage ?? bestFrame.bytes;
-        
-        final capturedDetections = bestDetections.map((d) => CapturedDetectionModel.fromDetection(d)).toList();
-        final hazard = CapturedHazardModel(
-          id: _uuid.v4(), 
-          timestamp: event.sensorData.timestamp, 
-          imagePath: '', 
-          detections: capturedDetections, 
-          sensorSnapshot: event.sensorData.toJson()
-        );
-        
-        final savedHazard = await _hazardStore.saveHazard(hazard: hazard, imageBytes: imageToSave);
-        
-        if (state is CameraReady && !isClosed) {
-          final currentState = state as CameraReady;
-          emit(currentState.copyWith(
-            capturedHazards: [...currentState.capturedHazards, savedHazard], 
-            lastCapturedHazardId: savedHazard.id
-          ));
+        try {
+          // Run detection on buffered frame
+          final detections = await _runDetectorOnDemand(frame.bytes);
+          
+          final filtered = detections.where((d) => d.confidence >= ModelConfig.GYRO_MIN_CONFIDENCE).toList();
+          
+          if (filtered.isNotEmpty) {
+            final topDetection = filtered.reduce((a, b) => a.confidence >= b.confidence ? a : b);
+            if (topDetection.confidence > bestConfidence) {
+              bestConfidence = topDetection.confidence;
+              bestDetections = filtered;
+              bestFrame = frame;
+            }
+          }
+        } catch (e) {
+          debugPrint('Detection error on frame: $e');
         }
-      } catch (e) {
-        debugPrint('Error saving hazard: $e');
+        
+        processed++;
+        
+        // Yield to event loop every 5 frames to keep UI responsive
+        if (processed % 5 == 0) {
+          await Future.delayed(const Duration(milliseconds: 1));
+        }
+      }
+      
+      if (bestFrame != null && bestDetections.isNotEmpty) {
+        try {
+          // Draw bounding boxes on the best frame
+          final annotatedImage = _tfliteService.drawDetectionsOnJpeg(
+            bestFrame.bytes,
+            bestDetections,
+          );
+          
+          final imageToSave = annotatedImage ?? bestFrame.bytes;
+          
+          final capturedDetections = bestDetections.map((d) => CapturedDetectionModel.fromDetection(d)).toList();
+          final hazard = CapturedHazardModel(
+            id: _uuid.v4(), 
+            timestamp: event.sensorData.timestamp, 
+            imagePath: '', 
+            detections: capturedDetections, 
+            sensorSnapshot: event.sensorData.toJson()
+          );
+          
+          final savedHazard = await _hazardStore.saveHazard(hazard: hazard, imageBytes: imageToSave);
+          
+          if (state is CameraReady && !isClosed) {
+            final currentState = state as CameraReady;
+            emit(currentState.copyWith(
+              capturedHazards: [...currentState.capturedHazards, savedHazard], 
+              lastCapturedHazardId: savedHazard.id
+            ));
+          }
+        } catch (e) {
+          debugPrint('Error saving hazard: $e');
+        }
+      }
+    } finally {
+      if (resumeRealtime && _isDetecting) {
+        _allowRealtimeDetections = true;
       }
     }
   }
@@ -331,6 +373,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       // Stop detection cleanly first
       if (_isDetecting) {
         _isDetecting = false;
+        _allowRealtimeDetections = false;
         await _gyroSubscription?.cancel();
         _gyroSubscription = null;
         _gyroMonitor.stopMonitoring();
@@ -356,7 +399,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       final description = _availableCameras[_currentCameraIndex];
       final newController = CameraController(
         description,
-        ResolutionPreset.medium,  // Balance quality and performance
+        ResolutionPreset.low,  // Prioritize FPS for analysis stream
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -390,6 +433,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   Future<void> _onDisposeCamera(DisposeCameraEvent event, Emitter<CameraState> emit) async {
     await _shutdownController();
+    await _disposeDetector();
     if (!isClosed) {
       emit(CameraInitial());
     }
@@ -408,6 +452,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           return; // Only process every Nth frame to control workload
         }
 
+        final bool detectorReady =
+            _allowRealtimeDetections && _detectorHasCapacity;
+        final bool bufferNeeded = _shouldCaptureBufferFrame();
+
+        if (!detectorReady && !bufferNeeded) {
+          framesSinceLastEmission = 0;
+          return;
+        }
+
         try {
           final jpeg = _tfliteService.convertCameraImageToJpeg(
             image,
@@ -415,12 +468,19 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           );
 
           if (jpeg != null) {
-            // ignore: void_checks
-            add(ProcessFrame(jpeg, frameSpan: framesSinceLastEmission));
-            framesSinceLastEmission = 0;
+            final capturedAt = DateTime.now();
+            add(ProcessFrame(
+              jpeg,
+              frameSpan: framesSinceLastEmission,
+              capturedAt: capturedAt,
+              enqueueForDetection: detectorReady,
+              saveToBuffer: bufferNeeded,
+            ));
           }
         } catch (e) {
           debugPrint('Frame conversion error: $e');
+        } finally {
+          framesSinceLastEmission = 0;
         }
       });
       _imageStreamActive = true;
@@ -430,8 +490,79 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
   }
 
-  Future<void> _ensureModelLoaded() async {
-    if (!_tfliteService.isModelLoaded) await _tfliteService.loadModel();
+  Future<void> _ensureDetectorInitialized() async {
+    if (_detectorIsolate != null) return;
+    try {
+      _detectorIsolate = await DetectorIsolate.spawn(
+        maxInflight: ModelConfig.MAX_INFLIGHT_DETECTIONS,
+      );
+      _detectorSubscription = _detectorIsolate!.results.listen(
+        _handleDetectorPacket,
+        onError: (error, stackTrace) {
+          debugPrint('Detector isolate error: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to start detector isolate: $e');
+      rethrow;
+    }
+  }
+
+  void _sendFrameToDetector(Uint8List jpegBytes, DateTime timestamp) {
+    if (!_allowRealtimeDetections) return;
+    final detector = _detectorIsolate;
+    if (detector == null) return;
+    final accepted = detector.enqueueFrame(jpegBytes, timestamp: timestamp);
+    if (!accepted && !_loggedDetectorBackpressure) {
+      debugPrint('⚠️ Detector busy - dropping frames to preserve FPS');
+      _loggedDetectorBackpressure = true;
+    } else if (accepted) {
+      _loggedDetectorBackpressure = false;
+    }
+  }
+
+  bool get _detectorHasCapacity =>
+      _detectorIsolate?.hasCapacity ?? false;
+
+  bool _shouldCaptureBufferFrame() {
+    final interval = ModelConfig.PREBUFFER_EVERY_N;
+    if (interval <= 1) {
+      return true;
+    }
+    _bufferSampleCounter = (_bufferSampleCounter + 1) % interval;
+    return _bufferSampleCounter == 0;
+  }
+
+  void _handleDetectorPacket(DetectionPacket packet) {
+    if (!_isDetecting || !_allowRealtimeDetections) return;
+    if (packet.sequenceId <= _latestDetectionSequence) return;
+    _latestDetectionSequence = packet.sequenceId;
+
+    final filtered = packet.detections
+        .where((d) => d.confidence >= ModelConfig.CONFIDENCE_THRESHOLD)
+        .toList(growable: false);
+
+    if (state is CameraReady && !isClosed) {
+      emit((state as CameraReady).copyWith(detections: filtered));
+    }
+  }
+
+  Future<List<Detection>> _runDetectorOnDemand(Uint8List bytes) async {
+    await _ensureDetectorInitialized();
+    final detector = _detectorIsolate;
+    if (detector == null) return const [];
+    return detector.runOnDemand(bytes);
+  }
+
+  Future<void> _disposeDetector() async {
+    await _detectorSubscription?.cancel();
+    _detectorSubscription = null;
+    if (_detectorIsolate != null) {
+      await _detectorIsolate!.dispose();
+      _detectorIsolate = null;
+    }
+    _latestDetectionSequence = -1;
+    _allowRealtimeDetections = false;
   }
 
   void _pruneBuffer() {
@@ -458,6 +589,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   @override
   Future<void> close() async {
     await _shutdownController();
+    await _disposeDetector();
     return super.close();
   }
 }

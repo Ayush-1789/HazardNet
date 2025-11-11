@@ -1,6 +1,14 @@
-/// Configuration for TFLite models
+/// Preferred delegate order for TFLite acceleration
+enum DelegatePreference {
+  auto,
+  gpu,
+  nnapi,
+  cpu,
+}
+
+/// Configuration for TFLite models.
 /// Change modelFilename to switch models easily - just update this constant
-/// and place your new model in the models/ folder
+/// and place your new model in the models/ folder.
 class ModelConfig {
   // ============================================
   // 🔧 CHANGE THIS TO SWAP MODELS
@@ -42,10 +50,14 @@ class ModelConfig {
   
   // Frame skipping for better FPS (buffer every Nth frame)
   // Increasing this reduces CPU work per second and can improve FPS.
-  static const int FRAME_SKIP = 2; // Capture every 2nd frame (~15fps buffer, 30fps preview)
+  static const int FRAME_SKIP = 4; // Capture every 4th frame to cut conversion workload
 
-  // Lightweight pre-buffering cadence (store every Nth skipped frame)
-  static const int PREBUFFER_EVERY_N = 0; // Disable pre-buffering to reduce overhead
+  // Lightweight pre-buffering cadence (store every Nth processed frame)
+  static const int PREBUFFER_EVERY_N = 6; // Capture one buffered frame for gyro analysis every ~6 frames
+
+  // Background detection pipeline tuning
+  static const int MAX_INFLIGHT_DETECTIONS = 2; // Number of frames detector can work on simultaneously
+  static const Duration DETECTOR_IDLE_TIMEOUT = Duration(milliseconds: 150);
   
   // Buffer configuration for gyro-triggered analysis
   static const int BUFFER_DURATION_SECONDS = 10; // Maintain 10s of frames in memory
@@ -82,12 +94,20 @@ class ModelConfig {
   
   // Number of threads for inference
   static const int NUM_THREADS = 4;
-  
-  // Use GPU delegate if available (experimental)
-  static const bool USE_GPU = false; // Float models may work better with NNAPI
-  
-  // Use NNAPI delegate on Android (experimental)
-  static const bool USE_NNAPI = false; // NNAPI actually SLOWS DOWN this model (427ms vs 70ms)
+
+  // Toggle delegate support (additional guards beyond platform availability)
+  static const bool ENABLE_GPU_DELEGATE = true;
+  static const bool ENABLE_NNAPI_DELEGATE = true;
+
+  // Runtime delegate selection
+  static const DelegatePreference DELEGATE_PREFERENCE = DelegatePreference.auto;
+
+  // Order to evaluate delegates when DELEGATE_PREFERENCE == auto
+  static const List<DelegatePreference> AUTO_DELEGATE_ORDER = [
+    DelegatePreference.gpu,
+    DelegatePreference.nnapi,
+    DelegatePreference.cpu,
+  ];
   
   // ============================================
   // Helper Methods

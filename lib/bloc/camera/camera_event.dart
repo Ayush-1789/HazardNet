@@ -28,11 +28,26 @@ class StopRecording extends CameraEvent {}
 class ProcessFrame extends CameraEvent {
   final dynamic imageData; // CameraImage or pre-converted bytes
   final int frameSpan; // Number of stream frames represented by this event
-  
-  const ProcessFrame(this.imageData, {this.frameSpan = 1});
-  
+  final DateTime capturedAt;
+  final bool enqueueForDetection;
+  final bool saveToBuffer;
+
+  ProcessFrame(
+    this.imageData, {
+    this.frameSpan = 1,
+    DateTime? capturedAt,
+    this.enqueueForDetection = true,
+    this.saveToBuffer = true,
+  }) : capturedAt = capturedAt ?? DateTime.now();
+
   @override
-  List<Object?> get props => [imageData, frameSpan];
+  List<Object?> get props => [
+        imageData,
+        frameSpan,
+        capturedAt,
+        enqueueForDetection,
+        saveToBuffer,
+      ];
 }
 
 class DisposeCameraEvent extends CameraEvent {}
