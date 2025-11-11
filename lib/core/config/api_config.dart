@@ -7,12 +7,12 @@ import 'package:http/http.dart' as http;
 class ApiConfig {
   // Backend URLs - Priority Order
   static const String laptopBackendUrl = 'http://192.168.31.39:3000/api';
-  static const String railwayBackendUrl = 'https://hazardnet-production.up.railway.app'; // Railway - NO cold starts! (no /api prefix)
-  static const String awsBackendUrl = 'https://hazardnet-9yd2.onrender.com/api'; // Render backup
+  static const String awsBackendUrl = 'http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api'; // AWS Elastic Beanstalk
+  static const String railwayBackendUrl = 'https://hazardnet-production.up.railway.app'; // Railway backup
   
-  // Current active backend - START WITH RAILWAY (instant connection)
-  static String _currentBackendUrl = railwayBackendUrl;
-  static BackendType _currentBackendType = BackendType.railway;
+  // Current active backend - START WITH AWS (cloud, reliable)
+  static String _currentBackendUrl = awsBackendUrl;
+  static BackendType _currentBackendType = BackendType.aws;
   
   /// Get current backend URL
   static String get baseApiUrl => _currentBackendUrl;
@@ -46,30 +46,8 @@ class ApiConfig {
       print('📝 [BACKEND] Details: ${e.toString()}');
     }
     
-    // Priority 2: Try Render (cloud, free tier with cold start)
-    print('☁️ [BACKEND] Testing Priority 2: Render Cloud ($railwayBackendUrl)');
-    print('⏰ [BACKEND] Note: Render may take up to 60 seconds if sleeping...');
-    try {
-      final startTime = DateTime.now();
-      final railwayResponse = await _checkBackendHealth(railwayBackendUrl);
-      final duration = DateTime.now().difference(startTime);
-      
-      if (railwayResponse) {
-        _currentBackendUrl = railwayBackendUrl;
-        _currentBackendType = BackendType.railway;
-        print('✅ [BACKEND] SUCCESS: Connected to Render Cloud in ${duration.inSeconds}s');
-        print('🚀 [BACKEND] Using: $railwayBackendUrl');
-        return railwayBackendUrl;
-      } else {
-        print('❌ [BACKEND] FAILED: Render backend returned non-200 status');
-      }
-    } catch (e) {
-      print('⚠️ [BACKEND] ERROR: Render backend not available');
-      print('📝 [BACKEND] Details: ${e.toString()}');
-    }
-    
-    // Priority 3: Try Vercel (backup cloud)
-    print('☁️ [BACKEND] Testing Priority 3: Vercel Backup ($awsBackendUrl)');
+    // Priority 2: Try AWS (cloud, reliable)
+    print('☁️ [BACKEND] Testing Priority 2: AWS Cloud ($awsBackendUrl)');
     try {
       final startTime = DateTime.now();
       final awsResponse = await _checkBackendHealth(awsBackendUrl);
@@ -78,14 +56,36 @@ class ApiConfig {
       if (awsResponse) {
         _currentBackendUrl = awsBackendUrl;
         _currentBackendType = BackendType.aws;
-        print('✅ [BACKEND] SUCCESS: Connected to Vercel Backup in ${duration.inSeconds}s');
+        print('✅ [BACKEND] SUCCESS: Connected to AWS Cloud in ${duration.inSeconds}s');
         print('🚀 [BACKEND] Using: $awsBackendUrl');
         return awsBackendUrl;
       } else {
-        print('❌ [BACKEND] FAILED: Vercel backend returned non-200 status');
+        print('❌ [BACKEND] FAILED: AWS backend returned non-200 status');
       }
     } catch (e) {
-      print('⚠️ [BACKEND] ERROR: Vercel backend not available');
+      print('⚠️ [BACKEND] ERROR: AWS backend not available');
+      print('📝 [BACKEND] Details: ${e.toString()}');
+    }
+    
+    // Priority 3: Try Railway (backup cloud)
+    print('☁️ [BACKEND] Testing Priority 3: Railway Backup ($railwayBackendUrl)');
+    print('⏰ [BACKEND] Note: Railway may take up to 60 seconds if sleeping...');
+    try {
+      final startTime = DateTime.now();
+      final railwayResponse = await _checkBackendHealth(railwayBackendUrl);
+      final duration = DateTime.now().difference(startTime);
+      
+      if (railwayResponse) {
+        _currentBackendUrl = railwayBackendUrl;
+        _currentBackendType = BackendType.railway;
+        print('✅ [BACKEND] SUCCESS: Connected to Railway Backup in ${duration.inSeconds}s');
+        print('🚀 [BACKEND] Using: $railwayBackendUrl');
+        return railwayBackendUrl;
+      } else {
+        print('❌ [BACKEND] FAILED: Railway backend returned non-200 status');
+      }
+    } catch (e) {
+      print('⚠️ [BACKEND] ERROR: Railway backend not available');
       print('📝 [BACKEND] Details: ${e.toString()}');
     }
     

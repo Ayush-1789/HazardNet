@@ -27,6 +27,15 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
+// Root endpoint for EB health check
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'HazardNet API Server',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 
