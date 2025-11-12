@@ -10,8 +10,7 @@ class AppConstants {
   // AWS EB: https://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api
   // Fallback: Render.com (https://hazardnet-9yd2.onrender.com/api)
   // Local: http://192.168.31.39:3000/api (When laptop backend is running)
-  static final String baseApiUrl =
-      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000/api'; // Default to emulator loopback
+  static const String baseApiUrl = 'http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api'; // Changed to HTTP
   
   // Authentication Endpoints (match backend routes)
   static const String authLoginEndpoint = '/auth/login';
