@@ -897,6 +897,7 @@ class TFLiteService {
       // [x, y, w, h, objectness, class0, class1, ...]
       // We treat remaining elements after the first 5 as class logits/probabilities.
       const int coordCount = 4;
+      final int configuredLabels = ModelConfig.LABELS.length;
       for (final prediction in preds) {
         if (prediction.length <= coordCount) continue;
 
@@ -910,26 +911,26 @@ class TFLiteService {
             (xCenter <= 1.0 && yCenter <= 1.0 && width <= 1.0 && height <= 1.0);
 
         final int availableLength = prediction.length;
-        final double objectnessRaw = availableLength > coordCount ? prediction[coordCount] : -10.0;
-        final double objectnessProb = _sigmoid(objectnessRaw).clamp(0.0, 1.0);
+        if (availableLength <= coordCount) continue;
 
-        final int classValuesAvailable = math.max(0, availableLength - (coordCount + 1));
-        final int configuredLabels = ModelConfig.LABELS.length;
-        final int classesToUse = classValuesAvailable == 0
-            ? 0
-            : math.min(classValuesAvailable, configuredLabels);
+        // Current models output logits directly after the box coordinates.
+        const double objectnessProb = 1.0;
+        final int classStartIndex = coordCount;
+        final int classValuesAvailable = availableLength - classStartIndex;
+        if (classValuesAvailable <= 0) continue;
+        final int classesToUse = math.min(classValuesAvailable, configuredLabels);
 
         if (!_warnedClassCountMismatch && classValuesAvailable > 0 && classValuesAvailable != configuredLabels) {
           print('⚠️ Model outputs $classValuesAvailable class scores but ${ModelConfig.LABELS.length} labels are configured. Using $classesToUse of them.');
           _warnedClassCountMismatch = true;
         }
 
-        double bestClassProb = classValuesAvailable == 0 ? 1.0 : 0.0;
-        int bestClass = 0;
+        double bestClassProb = 0.0;
+        int bestClass = -1;
 
         if (classesToUse > 0) {
           for (int ci = 0; ci < classesToUse; ci++) {
-            final double rawCls = prediction[coordCount + 1 + ci];
+            final double rawCls = prediction[classStartIndex + ci];
             double clsProb;
 
             if (rawCls >= 0.0 && rawCls <= 1.0) {
@@ -945,6 +946,7 @@ class TFLiteService {
           }
         }
 
+        if (bestClass < 0) continue;
         final double confidence = (objectnessProb * bestClassProb).clamp(0.0, 1.0);
 
         // Apply filtering thresholds
