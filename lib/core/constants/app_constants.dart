@@ -6,11 +6,12 @@ class AppConstants {
   static const String appName = 'HazardNet';
   static const String appVersion = '1.0.0';
   
-  // API Configuration - AWS Elastic Beanstalk Backend Connected to RDS Database
-  // AWS EB: https://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api
+  // API Configuration - Using Local Backend Connected to Neon Database
+  // Railway: https://hazardnet-production.up.railway.app/api (Always online)
   // Fallback: Render.com (https://hazardnet-9yd2.onrender.com/api)
   // Local: http://192.168.31.39:3000/api (When laptop backend is running)
-  static const String baseApiUrl = 'https://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api'; // AWS EB backend → RDS DB
+  static final String baseApiUrl =
+      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000/api'; // Default to emulator loopback
   
   // Authentication Endpoints (match backend routes)
   static const String authLoginEndpoint = '/auth/login';
@@ -43,7 +44,8 @@ class AppConstants {
   static const String sensorDataEndpoint = '/sensor-data';
   
   // ML Model Endpoint (separate service)
-  static const String mlApiUrl = 'http://localhost:5000';
+  static final String mlApiUrl =
+      dotenv.env['ML_API_URL'] ?? 'http://10.0.2.2:5000';
   static const String hazardDetectionEndpoint = '/detect/hazard';
   
   // Hazard Detection Settings
@@ -76,13 +78,7 @@ class AppConstants {
   static const String severityCritical = 'critical';
   
   // Sensor Settings
-  static const int gyroscopeUpdateIntervalMs = 100;
-  static const int accelerometerUpdateIntervalMs = 100;
-  static const double impactThresholdG = 2.0; // G-force threshold for impact detection
-  static const double gyroscopeImpactThresholdRadPerSec = 0.7; // Lowered for easier detection (was 3.5)
-  static const int gyroCaptureWindowSeconds = 5; // How far back we keep buffered frames
-  static const int gyroTriggerCooldownSeconds = 3; // Cooldown before another capture can fire
-  static const int maxStoredCaptures = 20; // Limit stored auto captures
+  static const int maxStoredCaptures = 20; // Limit stored captures
   
   // Camera Settings
   // Maximum performance - lowest quality for best FPS

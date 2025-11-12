@@ -23,7 +23,6 @@ import 'package:event_safety_app/screens/dashboard/dashboard_screen.dart';
 // dev test screen removed
 import 'package:event_safety_app/data/services/tflite_service.dart';
 import 'package:event_safety_app/data/services/captured_hazard_store.dart';
-import 'package:event_safety_app/data/services/gyro_monitor_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,8 +84,6 @@ class HazardNetApp extends StatelessWidget {
           create: (context) => CameraBloc(
             tfliteService: TFLiteService(),
             hazardStore: CapturedHazardStore(),
-            locationBloc: context.read<LocationBloc>(),
-            gyroMonitor: GyroMonitorService(),
             availableCameras: cameras,
           ),
         ),
