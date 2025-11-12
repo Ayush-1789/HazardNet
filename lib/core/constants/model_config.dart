@@ -24,7 +24,7 @@ class ModelConfig {
   // ============================================
 
   // Input image dimensions (must match the TFLite model)
-  // hazard_int8_640.tflite actually expects 256x256 int8 tensors.
+  // best_int8.tflite expects 256x256 int8 tensors.
   static const int INPUT_WIDTH = 256;
   static const int INPUT_HEIGHT = 256;
 
