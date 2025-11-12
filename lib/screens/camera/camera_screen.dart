@@ -31,6 +31,7 @@ class _CameraScreenState extends State<CameraScreen> {
   late final LocationBloc _locationBloc;
   late final CameraBloc _cameraBloc;
   String? _lastAutoCaptureId;
+  String? _lastShownCapturePath;
   final Map<String, DateTime> _proximityAlerts = {};
   static const double _hazardAlertRadiusMeters = 80.0;
   static const Duration _hazardAlertCooldown = Duration(minutes: 5);
@@ -78,7 +79,9 @@ class _CameraScreenState extends State<CameraScreen> {
             if (state is CameraPermissionDenied) {
               _showPermissionDialog();
             }
-            if (state is CameraReady && state.capturedImagePath != null) {
+            if (state is CameraReady && state.capturedImagePath != null &&
+                state.capturedImagePath != _lastShownCapturePath) {
+              _lastShownCapturePath = state.capturedImagePath;
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
@@ -95,7 +98,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     const SnackBar(
-                      content: Text('Gyroscope trigger captured a hazard clip'),
+                      content: Text('Hazard capture saved'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );

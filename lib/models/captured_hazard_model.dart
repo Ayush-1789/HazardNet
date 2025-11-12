@@ -54,7 +54,7 @@ class CapturedDetectionModel extends Equatable {
   List<Object?> get props => [label, confidence, boundingBox];
 }
 
-/// Data class representing a gyroscope-triggered capture.
+/// Data class representing a saved hazard capture.
 class CapturedHazardModel extends Equatable {
   final String id;
   final DateTime timestamp;

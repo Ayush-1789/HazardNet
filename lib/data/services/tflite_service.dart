@@ -1,7 +1,9 @@
+import 'dart:io' show Platform;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
@@ -29,6 +31,9 @@ class Detection {
 
 /// Service for TensorFlow Lite model inference
 class TFLiteService {
+  TFLiteService({Uint8List? preloadedModelBytes})
+      : _preloadedModelBytes = preloadedModelBytes;
+
   Interpreter? _interpreter;
   bool _isModelLoaded = false;
   bool _hasLoggedInputInfo = false;
@@ -36,6 +41,9 @@ class TFLiteService {
   bool _hasLoggedOutputInfo = false;
   bool _warnedClassCountMismatch = false;
   GpuDelegateV2? _gpuDelegate;
+  final Uint8List? _preloadedModelBytes;
+  DelegatePreference? _resolvedDelegatePreference;
+  String _activeDelegateLabel = 'Uninitialized';
   int? _modelInputWidth;
   int? _modelInputHeight;
   int _inferenceCount = 0;
@@ -45,48 +53,7 @@ class TFLiteService {
     try {
       print('🔄 Loading model: ${ModelConfig.MODEL_PATH}');
 
-      Interpreter? interpreter;
-
-      if (ModelConfig.USE_GPU) {
-        try {
-          final gpuOptions = InterpreterOptions()
-            ..threads = ModelConfig.NUM_THREADS;
-          _gpuDelegate = GpuDelegateV2();
-          gpuOptions.addDelegate(_gpuDelegate!);
-
-          interpreter = await Interpreter.fromAsset(
-            ModelConfig.MODEL_PATH,
-            options: gpuOptions,
-          );
-
-          print('✅ GPU delegate enabled');
-        } catch (e) {
-          print('⚠️ GPU delegate unavailable, falling back: $e');
-          _gpuDelegate?.delete();
-          _gpuDelegate = null;
-        }
-      }
-
-      if (interpreter == null) {
-        final fallbackOptions = InterpreterOptions()
-          ..threads = ModelConfig.NUM_THREADS;
-
-        if (ModelConfig.USE_NNAPI) {
-          fallbackOptions.useNnApiForAndroid = true;
-          print('✅ NNAPI delegate enabled');
-        } else if (ModelConfig.USE_GPU) {
-          print('ℹ️ Falling back to CPU execution');
-        } else {
-          print('ℹ️ Using CPU execution');
-        }
-
-        interpreter = await Interpreter.fromAsset(
-          ModelConfig.MODEL_PATH,
-          options: fallbackOptions,
-        );
-      }
-
-      _interpreter = interpreter;
+      await _initializeInterpreter();
 
       if (_interpreter == null) {
         throw Exception('Unable to create interpreter.');
@@ -111,6 +78,7 @@ class TFLiteService {
 
       _isModelLoaded = true;
       print('✅ Model loaded successfully');
+      print('   Delegate: $_activeDelegateLabel');
       print('   Input shape: $inputShape');
       if (_modelInputWidth != null && _modelInputHeight != null) {
         print('   Derived input size -> width: $_modelInputWidth, height: $_modelInputHeight');
@@ -124,6 +92,187 @@ class TFLiteService {
       rethrow;
     }
   }
+
+  Future<void> _initializeInterpreter() async {
+    final attempts = _buildInterpreterAttempts();
+    if (attempts.isEmpty) {
+      throw Exception('No valid delegate configuration available.');
+    }
+
+    Interpreter? interpreter;
+    for (final attempt in attempts) {
+      try {
+        interpreter = await _createInterpreter(
+          attempt.options,
+        );
+        _resolvedDelegatePreference = attempt.preference;
+        _activeDelegateLabel = attempt.label;
+        print('✅ Delegate selected: $_activeDelegateLabel');
+        break;
+      } catch (e, stack) {
+        attempt.onFailure?.call();
+        debugPrint('⚠️ Failed to init ${attempt.label}: $e');
+        debugPrintStack(stackTrace: stack);
+      }
+    }
+
+    if (interpreter == null) {
+      throw Exception('Unable to create interpreter with any delegate.');
+    }
+
+    _interpreter = interpreter;
+  }
+
+  List<_InterpreterAttempt> _buildInterpreterAttempts() {
+    final order = _resolveDelegateOrder();
+    final attempts = <_InterpreterAttempt>[];
+    for (final preference in order) {
+      final attempt = _createAttemptForPreference(preference);
+      if (attempt != null) {
+        attempts.add(attempt);
+      }
+    }
+    return attempts;
+  }
+
+  List<DelegatePreference> _resolveDelegateOrder() {
+    List<DelegatePreference> baseOrder;
+    switch (ModelConfig.DELEGATE_PREFERENCE) {
+      case DelegatePreference.auto:
+        baseOrder = ModelConfig.AUTO_DELEGATE_ORDER;
+        break;
+      case DelegatePreference.gpu:
+        baseOrder = const [
+          DelegatePreference.gpu,
+          DelegatePreference.nnapi,
+          DelegatePreference.cpu,
+        ];
+        break;
+      case DelegatePreference.nnapi:
+        baseOrder = const [
+          DelegatePreference.nnapi,
+          DelegatePreference.gpu,
+          DelegatePreference.cpu,
+        ];
+        break;
+      case DelegatePreference.cpu:
+        baseOrder = const [DelegatePreference.cpu];
+        break;
+    }
+
+    final result = <DelegatePreference>[];
+    final seen = <DelegatePreference>{};
+    for (final preference in baseOrder) {
+      if (preference == DelegatePreference.gpu && !_canUseGpuDelegate) {
+        continue;
+      }
+      if (preference == DelegatePreference.nnapi && !_canUseNnapiDelegate) {
+        continue;
+      }
+      if (preference == DelegatePreference.auto) {
+        continue;
+      }
+      if (seen.add(preference)) {
+        result.add(preference);
+      }
+    }
+
+    if (!result.contains(DelegatePreference.cpu)) {
+      result.add(DelegatePreference.cpu);
+    }
+    return result;
+  }
+
+  _InterpreterAttempt? _createAttemptForPreference(DelegatePreference preference) {
+    switch (preference) {
+      case DelegatePreference.gpu:
+        return _createGpuAttempt();
+      case DelegatePreference.nnapi:
+        return _createNnapiAttempt();
+      case DelegatePreference.cpu:
+        return _createCpuAttempt();
+      case DelegatePreference.auto:
+        return null;
+    }
+  }
+
+  _InterpreterAttempt? _createGpuAttempt() {
+    if (!_canUseGpuDelegate) return null;
+
+    if (Platform.isAndroid) {
+      try {
+        _gpuDelegate?.delete();
+        _gpuDelegate = GpuDelegateV2();
+      } catch (e) {
+        print('⚠️ Unable to instantiate GPU delegate: $e');
+        _gpuDelegate?.delete();
+        _gpuDelegate = null;
+        return null;
+      }
+
+      final options = _createBaseOptions()..addDelegate(_gpuDelegate!);
+      return _InterpreterAttempt(
+        preference: DelegatePreference.gpu,
+        options: options,
+        label: 'GPU (Android)',
+        onFailure: () {
+          _gpuDelegate?.delete();
+          _gpuDelegate = null;
+        },
+      );
+    }
+
+    if (Platform.isIOS) {
+      final options = _createBaseOptions()..useMetalDelegateForIOS = true;
+      return _InterpreterAttempt(
+        preference: DelegatePreference.gpu,
+        options: options,
+        label: 'GPU (Metal)',
+      );
+    }
+
+    return null;
+  }
+
+  _InterpreterAttempt? _createNnapiAttempt() {
+    if (!_canUseNnapiDelegate) return null;
+    final options = _createBaseOptions()..useNnApiForAndroid = true;
+    return _InterpreterAttempt(
+      preference: DelegatePreference.nnapi,
+      options: options,
+      label: 'NNAPI',
+    );
+  }
+
+  _InterpreterAttempt _createCpuAttempt() {
+    final options = _createBaseOptions();
+    return _InterpreterAttempt(
+      preference: DelegatePreference.cpu,
+      options: options,
+      label: 'CPU',
+    );
+  }
+
+  InterpreterOptions _createBaseOptions() {
+    return InterpreterOptions()..threads = ModelConfig.NUM_THREADS;
+  }
+
+  Future<Interpreter> _createInterpreter(InterpreterOptions options) async {
+    if (_preloadedModelBytes != null) {
+      final bytes = _preloadedModelBytes!;
+      return Interpreter.fromBuffer(bytes, options: options);
+    }
+    return Interpreter.fromAsset(
+      ModelConfig.MODEL_PATH,
+      options: options,
+    );
+  }
+
+  bool get _canUseGpuDelegate =>
+      ModelConfig.ENABLE_GPU_DELEGATE && (Platform.isAndroid || Platform.isIOS);
+
+  bool get _canUseNnapiDelegate =>
+      ModelConfig.ENABLE_NNAPI_DELEGATE && Platform.isAndroid;
 
   /// Check if model is loaded
   bool get isModelLoaded => _isModelLoaded;
@@ -748,6 +897,7 @@ class TFLiteService {
       // [x, y, w, h, objectness, class0, class1, ...]
       // We treat remaining elements after the first 5 as class logits/probabilities.
       const int coordCount = 4;
+      final int configuredLabels = ModelConfig.LABELS.length;
       for (final prediction in preds) {
         if (prediction.length <= coordCount) continue;
 
@@ -761,26 +911,26 @@ class TFLiteService {
             (xCenter <= 1.0 && yCenter <= 1.0 && width <= 1.0 && height <= 1.0);
 
         final int availableLength = prediction.length;
-        final double objectnessRaw = availableLength > coordCount ? prediction[coordCount] : -10.0;
-        final double objectnessProb = _sigmoid(objectnessRaw).clamp(0.0, 1.0);
+        if (availableLength <= coordCount) continue;
 
-        final int classValuesAvailable = math.max(0, availableLength - (coordCount + 1));
-        final int configuredLabels = ModelConfig.LABELS.length;
-        final int classesToUse = classValuesAvailable == 0
-            ? 0
-            : math.min(classValuesAvailable, configuredLabels);
+        // Current models output logits directly after the box coordinates.
+        const double objectnessProb = 1.0;
+        final int classStartIndex = coordCount;
+        final int classValuesAvailable = availableLength - classStartIndex;
+        if (classValuesAvailable <= 0) continue;
+        final int classesToUse = math.min(classValuesAvailable, configuredLabels);
 
         if (!_warnedClassCountMismatch && classValuesAvailable > 0 && classValuesAvailable != configuredLabels) {
           print('⚠️ Model outputs $classValuesAvailable class scores but ${ModelConfig.LABELS.length} labels are configured. Using $classesToUse of them.');
           _warnedClassCountMismatch = true;
         }
 
-        double bestClassProb = classValuesAvailable == 0 ? 1.0 : 0.0;
-        int bestClass = 0;
+        double bestClassProb = 0.0;
+        int bestClass = -1;
 
         if (classesToUse > 0) {
           for (int ci = 0; ci < classesToUse; ci++) {
-            final double rawCls = prediction[coordCount + 1 + ci];
+            final double rawCls = prediction[classStartIndex + ci];
             double clsProb;
 
             if (rawCls >= 0.0 && rawCls <= 1.0) {
@@ -796,6 +946,7 @@ class TFLiteService {
           }
         }
 
+        if (bestClass < 0) continue;
         final double confidence = (objectnessProb * bestClassProb).clamp(0.0, 1.0);
 
         // Apply filtering thresholds
@@ -1022,6 +1173,8 @@ class TFLiteService {
     // GpuDelegateV2 exposes `delete()` to free native resources.
     _gpuDelegate?.delete();
     _gpuDelegate = null;
+    _resolvedDelegatePreference = null;
+    _activeDelegateLabel = 'Uninitialized';
     _isModelLoaded = false;
     _hasLoggedInputInfo = false;
     _hasLoggedImageFormat = false;
@@ -1032,4 +1185,18 @@ class TFLiteService {
     _inferenceCount = 0;
     print('🗑️ TFLite service disposed');
   }
+}
+
+class _InterpreterAttempt {
+  final DelegatePreference preference;
+  final InterpreterOptions options;
+  final String label;
+  final void Function()? onFailure;
+
+  const _InterpreterAttempt({
+    required this.preference,
+    required this.options,
+    required this.label,
+    this.onFailure,
+  });
 }

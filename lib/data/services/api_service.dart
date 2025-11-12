@@ -8,17 +8,17 @@ import 'package:event_safety_app/core/constants/app_constants.dart';
 
 class ApiService {
   final http.Client _client;
-  String? _authToken;
+  static String? _globalAuthToken;
 
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
   /// Set authentication token for API requests
   void setAuthToken(String? token) {
-    _authToken = token;
+    _globalAuthToken = token;
   }
 
   /// Get current auth token
-  String? get authToken => _authToken;
+  String? get authToken => _globalAuthToken;
 
   /// Build headers with authentication
   Map<String, String> _buildHeaders({Map<String, String>? additionalHeaders}) {
@@ -27,8 +27,9 @@ class ApiService {
       'Accept': 'application/json',
     };
 
-    if (_authToken != null) {
-      headers['Authorization'] = 'Bearer $_authToken';
+    final token = _globalAuthToken;
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
     }
 
     if (additionalHeaders != null) {
@@ -51,7 +52,7 @@ class ApiService {
       }
 
       print('🌐 [API-GET] Request to: $uri');
-      print('🔑 [API-GET] Has auth token: ${_authToken != null}');
+      print('🔑 [API-GET] Has auth token: ${_globalAuthToken != null}');
       print('📤 [API-GET] Query params: $queryParams');
       
       final startTime = DateTime.now();
@@ -89,7 +90,7 @@ class ApiService {
       final uri = Uri.parse('${AppConstants.baseApiUrl}$endpoint');
       
       print('🌐 [API-POST] Request to: $uri');
-      print('🔑 [API-POST] Has auth token: ${_authToken != null}');
+      print('🔑 [API-POST] Has auth token: ${_globalAuthToken != null}');
       print('📤 [API-POST] Body: ${body != null ? jsonEncode(body) : 'null'}');
       
       final startTime = DateTime.now();
@@ -182,7 +183,7 @@ class ApiService {
       
       print('🌐 [API-UPLOAD] Request to: $uri');
       print('📁 [API-UPLOAD] File: $filePath');
-      print('🔑 [API-UPLOAD] Has auth token: ${_authToken != null}');
+      print('🔑 [API-UPLOAD] Has auth token: ${_globalAuthToken != null}');
       
       // Check if file exists
       final fileObj = File(filePath);
@@ -197,11 +198,10 @@ class ApiService {
       final request = http.MultipartRequest('POST', uri);
       
       // Add headers (excluding Content-Type as multipart sets it automatically)
-      final headers = <String, String>{};
-      if (_authToken != null) {
-        headers['Authorization'] = 'Bearer $_authToken';
+      final token = _globalAuthToken;
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
       }
-      request.headers.addAll(headers);
       
       // Add file
       final file = await http.MultipartFile.fromPath(
@@ -246,7 +246,7 @@ class ApiService {
       return jsonDecode(response.body) as Map<String, dynamic>;
     } else if (statusCode == 401) {
       // Unauthorized - token expired or invalid
-      _authToken = null;
+      _globalAuthToken = null;
       throw ApiException(
         message: 'Authentication required. Please login again.',
         statusCode: 401,

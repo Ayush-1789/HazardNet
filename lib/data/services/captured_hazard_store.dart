@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event_safety_app/core/constants/app_constants.dart';
 import 'package:event_safety_app/models/captured_hazard_model.dart';
 
-/// Persists gyroscope-triggered hazard captures (image + metadata).
+/// Persists captured hazard images (image + metadata).
 class CapturedHazardStore {
   Future<String> _ensureStorageDir() async {
     final dir = await getApplicationDocumentsDirectory();
