@@ -24,6 +24,32 @@ app.use('/uploads', express.static('uploads'));
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('❌ Database connection error:', err);
+  } else {
+    console.log('✅ Database connected successfully');
+    // Run migrations on startup
+    console.log('Starting migrations...');
+    const { runMigrations } = require('./run-migrations');
+    runMigrations().then(() => {
+      console.log('Migrations completed');
+      // Check if data exists
+      pool.query('SELECT COUNT(*) FROM users', (err, res) => {
+        if (err) {
+          console.log('Error checking users:', err);
+          return;
+        }
+        const count = parseInt(res.rows[0].count);
+        console.log(`Users count: ${count}`);
+        if (count === 0) {
+          console.log('No data found, running data migration...');
+          const { migrateData } = require('./migrate-data');
+          migrateData().catch(console.error);
+        } else {
+          console.log('Data already exists, skipping migration');
+        }
+      });
+    }).catch((err) => {
+      console.error('Migrations failed:', err);
+    });
   }
 });
 
@@ -34,6 +60,37 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// Temp route to check tables
+app.get('/tables', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+    res.json({ tables: result.rows.map(r => r.table_name) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Temp route to count users
+app.get('/usercount', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT COUNT(*) FROM users");
+    res.json({ count: result.rows[0].count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Temp route to trigger migration
+app.get('/migrate', async (req, res) => {
+  try {
+    const { migrateData } = require('./migrate-data');
+    await migrateData();
+    res.json({ message: 'Migration started' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // API Routes

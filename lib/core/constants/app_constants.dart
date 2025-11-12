@@ -6,11 +6,11 @@ class AppConstants {
   static const String appName = 'HazardNet';
   static const String appVersion = '1.0.0';
   
-  // API Configuration - Using Local Backend Connected to Neon Database
-  // Railway: https://hazardnet-production.up.railway.app/api (Always online)
+  // API Configuration - AWS Elastic Beanstalk Backend Connected to RDS Database
+  // AWS EB: https://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api
   // Fallback: Render.com (https://hazardnet-9yd2.onrender.com/api)
   // Local: http://192.168.31.39:3000/api (When laptop backend is running)
-  static const String baseApiUrl = 'http://192.168.31.39:3000/api'; // LOCAL backend → Neon DB for testing
+  static const String baseApiUrl = 'https://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api'; // AWS EB backend → RDS DB
   
   // Authentication Endpoints (match backend routes)
   static const String authLoginEndpoint = '/auth/login';

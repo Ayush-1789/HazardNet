@@ -4,9 +4,18 @@ const path = require('path');
 
 async function runMigrations() {
   try {
+    console.log('📚 Reading schema file...');
+    const schemaSQL = fs.readFileSync(
+      path.join(__dirname, 'database', 'schema.sql'),
+      'utf8'
+    );
+
+    console.log('🔄 Running schema...');
+    await pool.query(schemaSQL);
+
     console.log('📚 Reading migrations file...');
     const migrationSQL = fs.readFileSync(
-      path.join(__dirname, '..', 'database', 'migrations.sql'),
+      path.join(__dirname, 'database', 'migrations.sql'),
       'utf8'
     );
 
@@ -30,12 +39,12 @@ async function runMigrations() {
     console.log('\nNew views created:');
     console.log('  - leaderboard');
 
-    process.exit(0);
+    // process.exit(0);
   } catch (error) {
     console.error('❌ Migration failed:', error.message);
     console.error(error);
-    process.exit(1);
+    // process.exit(1); // Remove to not kill server
   }
 }
 
-runMigrations();
+module.exports = { runMigrations };
