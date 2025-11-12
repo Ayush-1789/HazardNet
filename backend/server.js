@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const { pool } = require('./db');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 8080; // Hardcoded for EB
 const HOST = '0.0.0.0'; // Listen on all network interfaces
 
 // Middleware
