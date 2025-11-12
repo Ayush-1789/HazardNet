@@ -10,7 +10,8 @@ class AppConstants {
   // Railway: https://hazardnet-production.up.railway.app/api (Always online)
   // Fallback: Render.com (https://hazardnet-9yd2.onrender.com/api)
   // Local: http://192.168.31.39:3000/api (When laptop backend is running)
-  static const String baseApiUrl = 'http://192.168.31.39:3000/api'; // LOCAL backend → Neon DB for testing
+  static final String baseApiUrl =
+      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000/api'; // Default to emulator loopback
   
   // Authentication Endpoints (match backend routes)
   static const String authLoginEndpoint = '/auth/login';
@@ -43,7 +44,8 @@ class AppConstants {
   static const String sensorDataEndpoint = '/sensor-data';
   
   // ML Model Endpoint (separate service)
-  static const String mlApiUrl = 'http://localhost:5000';
+  static final String mlApiUrl =
+      dotenv.env['ML_API_URL'] ?? 'http://10.0.2.2:5000';
   static const String hazardDetectionEndpoint = '/detect/hazard';
   
   // Hazard Detection Settings
