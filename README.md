@@ -1,10 +1,10 @@
 ﻿# HazardNet - Road Hazard Detection App
 
-![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)
-![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)
-![Node.js](https://img.shields.io/badge/Node.js-20-green)
-![AWS](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+[![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)](https://dart.dev)
+[![Node.js](https://img.shields.io/badge/Node.js-20-green)](https://nodejs.org)
+[![AWS](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-orange)](https://aws.amazon.com/elasticbeanstalk)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 AI-powered hazard detection system with real-time alerts and emergency response. Mobile app (Flutter) + Backend (Node.js) on AWS.
 
@@ -108,6 +108,55 @@ backend/
 ├── database/           # Database schemas & migrations
 ├── server.js           # Express app entry point
 └── package.json        # Dependencies
+```
+
+## ⚙️ Backend Setup
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/Ayush-1789/HazardNet.git
+cd HazardNet
+```
+
+### Local Development (Recommended for now)
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+PORT=8080
+DATABASE_URL=postgresql://user:password@localhost:5432/hazardnet
+JWT_SECRET=your_local_secret_key
+NODE_ENV=development
+```
+
+Start the server:
+```bash
+npm start
+```
+
+Server runs on `http://localhost:8080`
+
+### AWS Deployment (In Progress)
+
+For production deployment on AWS Elastic Beanstalk:
+```bash
+cd backend
+eb init
+eb deploy
+```
+
+**Note:** AWS deployment is currently being configured. Use local development for testing.
+
+### Update App Configuration
+
+Update `lib/core/constants/app_constants.dart`:
+```dart
 ```
 
 ## �️ Backend Setup
@@ -254,3 +303,27 @@ The camera feed sends frames to the ML model API. Update `lib/bloc/camera/camera
 ---
 
 **Built with ❤️ for safer Indian roads**
+
+## 📄 License
+
+MIT License
+
+Copyright (c) 2025 HazardNet Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
