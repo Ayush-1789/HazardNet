@@ -80,6 +80,59 @@ lib/
 └── widgets/            # Reusable widgets
 ```
 
+2. **Run the app**
+   ```bash
+   flutter run
+   ```
+
+## �️ Backend Setup
+
+### Local Development
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+PORT=8080
+DATABASE_URL=postgresql://user:password@localhost:5432/hazardnet
+JWT_SECRET=your_local_secret_key
+NODE_ENV=development
+```
+
+Start the server:
+```bash
+npm start
+```
+
+Server runs on `http://localhost:8080`
+
+### AWS Deployment
+
+For production deployment on AWS Elastic Beanstalk:
+```bash
+cd backend
+eb init
+eb deploy
+```
+
+Environment variables are configured in AWS Elastic Beanstalk console.
+
+### Update App Configuration
+
+If using local backend, update `lib/core/constants/app_constants.dart`:
+
+```dart
+// For Local Backend:
+static const String apiUrl = 'http://192.168.x.x:8080/api';  // Your machine IP
+
+// For AWS Backend:
+static const String apiUrl = 'http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api';
+```
+
 ## 🚦 Getting Started
 
 ### Installation
@@ -87,11 +140,6 @@ lib/
 1. **Install dependencies**
    ```bash
    flutter pub get
-   ```
-
-2. **Run the app**
-   ```bash
-   flutter run
    ```
 
 ## 📡 API Integration Guide
