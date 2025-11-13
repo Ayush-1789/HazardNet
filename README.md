@@ -52,7 +52,7 @@ AI-powered hazard detection system with real-time alerts and emergency response.
 - AWS Infrastructure
 - Environment: Production
 
-## 🏗️ Architecture
+## 🏗️ Project Architecture
 
 ```
 lib/
@@ -65,19 +65,36 @@ lib/
 │   └── services/       # API services, local storage
 ├── models/             # Data models (User, Hazard, Alert, etc.)
 ├── bloc/               # BLoC state management
-│   ├── auth/
-│   ├── camera/
-│   ├── hazard/
-│   ├── location/
-│   └── alerts/
+│   ├── auth/           # Authentication state
+│   ├── camera/         # Camera & detection logic
+│   ├── hazard/         # Hazard detection state
+│   ├── location/       # Location tracking state
+│   └── alerts/         # Alerts management state
 ├── screens/            # UI screens
-│   ├── welcome/
-│   ├── dashboard/
-│   ├── camera/
-│   ├── map/
-│   ├── alerts/
-│   └── profile/
+│   ├── welcome/        # Welcome/Onboarding screen
+│   ├── dashboard/      # Main dashboard
+│   ├── camera/         # Real-time hazard detection
+│   ├── map/            # Google Maps with markers
+│   ├── alerts/         # Alerts list
+│   └── profile/        # User profile
 └── widgets/            # Reusable widgets
+```
+
+## 🖥️ Backend Architecture
+
+```
+backend/
+├── routes/
+│   ├── auth.js         # Authentication endpoints
+│   ├── emergency.js    # Emergency/SOS endpoints
+│   ├── alerts.js       # Alert management
+│   └── authority.js    # Authority dashboard
+├── middleware/
+│   └── auth.js         # JWT verification middleware
+├── services/           # Business logic
+├── database/           # Database schemas & migrations
+├── server.js           # Express app entry point
+└── package.json        # Dependencies
 ```
 
 2. **Run the app**
