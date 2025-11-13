@@ -14,15 +14,13 @@ AI-powered hazard detection system with real-time alerts and emergency response.
 
 | Dashboard | Hazard Map | Detection |
 |-----------|-----------|-----------|
-| ![Dashboard](assets/screenshots/dashboard.png) | ![Map](assets/screenshots/map.png) | ![Detection](assets/screenshots/detection.png) |
+| ![Dashboard](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/dashboard.png) | ![Map](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/map.png) | ![Detection](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/detection.png) |
 | Home screen with journey stats, hazards count, and verified reports | Interactive map showing all hazards with real-time updates | Camera feed with AI hazard detection and bounding boxes |
 
 | Hazard Details | Alerts | Scan Screen |
 |-----------|-----------|-----------|
-| ![Details](assets/screenshots/details.png) | ![Alerts](assets/screenshots/alerts.png) | ![Scan](assets/screenshots/scan.png) |
+| ![Details](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/details.png) | ![Alerts](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/alerts.png) | ![Scan](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/scan.png) |
 | Full information about detected hazards with photo and location | Real-time notifications for approaching hazards and warnings | Active hazard detection interface with FPS metrics |
-
-*Note: Add actual screenshots to `assets/screenshots/` folder with filenames: dashboard.png, map.png, detection.png, details.png, alerts.png, scan.png*
 
 ## 🚀 Features
 
