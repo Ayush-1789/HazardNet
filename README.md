@@ -157,12 +157,180 @@ eb deploy
 ### Update App Configuration
 
 Update `lib/core/constants/app_constants.dart`:
+
+**For Local Development:**
 ```dart
+static const String apiUrl = 'http://localhost:8080/api';  // Local backend
+static const String googleMapsKey = 'YOUR_GOOGLE_MAPS_KEY';
 ```
 
-## �️ Backend Setup
+**For AWS Deployment (when ready):**
+```dart
+static const String apiUrl = 'http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api';  // AWS backend
+static const String googleMapsKey = 'YOUR_GOOGLE_MAPS_KEY';
+```
 
-### Local Development
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter SDK 3.24.5+
+- Node.js 20+
+- PostgreSQL
+- Android Studio / VS Code
+
+### Installation
+
+**1. Clone Repository:**
+```bash
+git clone https://github.com/Ayush-1789/HazardNet.git
+cd HazardNet
+```
+
+**2. Frontend Setup:**
+```bash
+flutter pub get
+```
+
+**3. Backend Setup:**
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+PORT=8080
+DATABASE_URL=postgresql://user:password@localhost:5432/hazardnet
+JWT_SECRET=your_local_secret_key
+NODE_ENV=development
+```
+
+Start the server:
+```bash
+npm start
+```
+
+---
+
+## 📁 Project Structure
+
+**Frontend (Flutter)**
+- `lib/` - Flutter application source code
+  - `bloc/` - BLoC state management
+  - `screens/` - UI screens
+  - `widgets/` - Reusable components
+  - `core/` - Constants and utilities
+  - `data/` - API services and models
+
+**Backend (Node.js)**
+- `backend/` - Express.js server
+  - `routes/` - API endpoints
+  - `middleware/` - Authentication
+  - `services/` - Business logic
+  - `database/` - Schema and migrations
+
+---
+
+## 🔌 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/status` - Check auth status
+- `GET /api/auth/profile` - Get user profile
+
+### Hazards
+- `GET /api/hazards` - Get all hazards
+- `GET /api/hazards/nearby` - Get nearby hazards
+- `POST /api/hazards/report` - Report new hazard
+- `PUT /api/hazards/:id/verify` - Verify hazard
+
+### Alerts
+- `GET /api/alerts` - Get user alerts
+- `PUT /api/alerts/:id/read` - Mark alert as read
+
+### Trips
+- `POST /api/trips/start` - Start trip
+- `POST /api/trips/end` - End trip
+- `GET /api/trips/history` - Get trip history
+
+---
+
+## 🧪 Testing
+
+### Run Flutter Tests
+```bash
+flutter test
+```
+
+### Run Backend Tests
+```bash
+cd backend
+npm test
+```
+
+### Test API Endpoints
+```bash
+curl http://localhost:8080/health
+```
+
+---
+
+## 🚀 Deployment
+
+### GitHub Actions CI/CD
+Push to `main` branch triggers automatic deployment:
+1. Code linting and testing
+2. Build application
+3. Deploy to AWS Elastic Beanstalk (when configured)
+4. Database migrations
+5. Health check verification
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
+
+---
+
+## 📝 Code Standards
+
+- Follow Flutter best practices
+- Use BLoC pattern for state management
+- Write meaningful commit messages
+- Add tests for new features
+- Update documentation
+
+---
+
+## 🐛 Troubleshooting
+
+### App Won't Connect to Backend
+- Verify API URL in `app_constants.dart`
+- Check if backend server is running
+- Verify Android network security config
+
+### Hazard Detection Not Working
+- Grant camera and location permissions
+- Ensure device has sufficient storage
+- Check TensorFlow Lite model is loaded
+
+### Build Issues
+```bash
+flutter clean
+flutter pub get
+flutter build apk --release
+```
+
+---
 
 ```bash
 cd backend
