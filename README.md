@@ -1,325 +1,647 @@
-﻿# HazardNet<div align="center"># HazardNet# HazardNet - AI-Powered Road Hazard Detection System# 🚗 HazardNet - AI-Powered Road Hazard Detection System# 🚗 HazardNet - AI-Powered Road Hazard Detection System
+﻿# 🛡️ HazardNet# HazardNet<div align="center"># HazardNet# HazardNet - AI-Powered Road Hazard Detection System# 🚗 HazardNet - AI-Powered Road Hazard Detection System# 🚗 HazardNet - AI-Powered Road Hazard Detection System
 
 
 
-AI-powered road hazard detection and reporting system for safer driving.
+### Real-Time AI-Powered Hazard Detection & Emergency Response System
 
 
 
-## About# HazardNet## AI-Powered Road Hazard Detection System
+![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue?logo=flutter) ![Node.js](https://img.shields.io/badge/Node.js-20-green?logo=node.js) ![AWS](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-orange?logo=amazon-aws) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-RDS-blue?logo=postgresql)AI-powered road hazard detection and reporting system for safer driving.
 
 
 
-HazardNet is a mobile application that uses machine learning to detect road hazards in real-time. The app alerts drivers about potholes, obstacles, and speed breakers, while building a community-driven hazard database.
+A comprehensive mobile application that detects hazards in real-time using AI, coordinates emergency responses, and connects users with authorities instantly.
 
 
 
-## Features### Real-time AI-Powered Road Hazard Detection System
+---## About# HazardNet## AI-Powered Road Hazard Detection System
 
 
 
-- Real-time hazard detection using TensorFlow Lite
-
-- Interactive map with hazard markers
-
-- Voice alerts for approaching hazards  [![Flutter](https://img.shields.io/badge/Flutter-3.24.5-02569B?logo=flutter)](https://flutter.dev)---
-
-- Community hazard reporting
-
-- Trip tracking and analytics[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js)](https://nodejs.org)
-
-- User authentication and profiles
-
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-4169E1?logo=postgresql)](https://postgresql.org)Real-time road hazard detection using machine learning and computer vision to make driving safer for everyone.
-
-## Tech Stack
-
-[![AWS](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-232F3E?logo=amazon-aws)](https://aws.amazon.com)
-
-- **Mobile:** Flutter 3.24.5, Dart 3.9.2
-
-- **Backend:** Node.js 20, Express.js, PostgreSQL[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)## Project Description
-
-- **Cloud:** AWS Elastic Beanstalk, AWS RDS
-
-- **AI/ML:** TensorFlow Lite INT8 model
-
-- **Maps:** Google Maps Platform
-
-- **Voice:** ElevenLabs TTS API[Features](#features) • [Architecture](#architecture) • [Installation](#installation) • [Documentation](#api-documentation) • [Contributing](#contributing)
+## 📸 Screenshots
 
 
+
+| Feature | Description |HazardNet is a mobile application that uses machine learning to detect road hazards in real-time. The app alerts drivers about potholes, obstacles, and speed breakers, while building a community-driven hazard database.
+
+|---------|-------------|
+
+| **Hazard Detection** | Real-time AI detection using TensorFlow Lite |
+
+| **Emergency SOS** | One-tap emergency alerts with location |
+
+| **Authority Dashboard** | Manage and respond to emergencies |## Features### Real-time AI-Powered Road Hazard Detection System
+
+
+
+---
+
+
+
+## 🌟 Features- Real-time hazard detection using TensorFlow Lite
+
+
+
+| 🎯 AI-Powered Detection | 🚨 Emergency Response |- Interactive map with hazard markers
+
+|-------------------------|----------------------|
+
+| ✅ Real-time hazard detection using TensorFlow Lite<br>✅ Multi-object recognition<br>✅ Instant hazard alerts | ✅ One-tap SOS with GPS location<br>✅ Direct authority notification<br>✅ Emergency history tracking |- Voice alerts for approaching hazards  [![Flutter](https://img.shields.io/badge/Flutter-3.24.5-02569B?logo=flutter)](https://flutter.dev)---
+
+
+
+| 🗺️ Location Services | 🔒 Security & Auth |- Community hazard reporting
+
+|---------------------|-------------------|
+
+| ✅ Google Maps integration<br>✅ Real-time location tracking<br>✅ Geofencing capabilities | ✅ JWT-based authentication<br>✅ Role-based access control<br>✅ Secure API endpoints |- Trip tracking and analytics[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js)](https://nodejs.org)
+
+
+
+| 🎤 Accessibility | 👮 Authority Dashboard |- User authentication and profiles
+
+|-----------------|----------------------|
+
+| ✅ Voice commands<br>✅ Text-to-speech feedback<br>✅ Multilingual support | ✅ Real-time alert management<br>✅ User verification<br>✅ Response coordination |[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-4169E1?logo=postgresql)](https://postgresql.org)Real-time road hazard detection using machine learning and computer vision to make driving safer for everyone.
+
+
+
+---## Tech Stack
+
+
+
+## 🏗️ Architecture[![AWS](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-232F3E?logo=amazon-aws)](https://aws.amazon.com)
+
+
+
+### Tech Stack- **Mobile:** Flutter 3.24.5, Dart 3.9.2
+
+
+
+| Component | Technologies |- **Backend:** Node.js 20, Express.js, PostgreSQL[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)## Project Description
+
+|-----------|--------------|
+
+| **Frontend** | Flutter 3.24.5, Dart 3.9.2, Material Design 3 |- **Cloud:** AWS Elastic Beanstalk, AWS RDS
+
+| **State Management** | BLoC Pattern |
+
+| **AI/ML** | TensorFlow Lite (On-Device) |- **AI/ML:** TensorFlow Lite INT8 model
+
+| **Backend** | Node.js 20, Express.js |
+
+| **Database** | PostgreSQL (AWS RDS) |- **Maps:** Google Maps Platform
+
+| **Authentication** | JWT, bcrypt |
+
+| **Maps** | Google Maps API |- **Voice:** ElevenLabs TTS API[Features](#features) • [Architecture](#architecture) • [Installation](#installation) • [Documentation](#api-documentation) • [Contributing](#contributing)
+
+| **Voice** | ElevenLabs TTS |
+
+| **Deployment** | AWS Elastic Beanstalk, AWS RDS |
+
+| **CI/CD** | GitHub Actions |
 
 ## Installation
 
+---
 
+
+
+## 🚀 Quick Start
 
 ### Mobile App</div>HazardNet is an intelligent road safety application designed to detect and report road hazards in real-time using advanced machine learning and computer vision technologies. The system integrates mobile application development, backend infrastructure, and AI-driven analytics to create a comprehensive solution for driver safety and road awareness.
 
+### Prerequisites
+
 
 
 ```bash
 
-git clone https://github.com/Ayush-1789/HazardNet.git
+# Required tools```bash
 
-cd HazardNet---**Version:** 1.0.0  ![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)
+- Flutter SDK 3.24.5+
 
-flutter pub get
+- Dart SDK 3.9.2+git clone https://github.com/Ayush-1789/HazardNet.git
+
+- Node.js 20+
+
+- PostgreSQLcd HazardNet---**Version:** 1.0.0  ![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)
+
+- AWS CLI (for deployment)
+
+- Android Studio / Xcodeflutter pub get
+
+```
 
 flutter run
 
+### Installation
+
 ```
-
-## OverviewThe application leverages TensorFlow Lite for on-device machine learning inference, Google Maps for spatial data visualization, and cloud infrastructure for scalable backend operations. Built for the i.Mobilothon Competition, HazardNet represents a complete end-to-end solution combining mobile development, cloud services, and artificial intelligence.
-
-### Backend
-
-
 
 ```bash
 
-cd backendHazardNet is an intelligent mobile application that leverages artificial intelligence and computer vision to detect road hazards in real-time. The system combines TensorFlow Lite machine learning models, Google Maps integration, and cloud infrastructure to create a comprehensive road safety solution.**License:** MIT  
+# Clone the repository## OverviewThe application leverages TensorFlow Lite for on-device machine learning inference, Google Maps for spatial data visualization, and cloud infrastructure for scalable backend operations. Built for the i.Mobilothon Competition, HazardNet represents a complete end-to-end solution combining mobile development, cloud services, and artificial intelligence.
+
+git clone https://github.com/Ayush-1789/HazardNet.git
+
+cd HazardNet### Backend
+
+
+
+# Install Flutter dependencies
+
+flutter pub get
+
+```bash
+
+# Install backend dependencies
+
+cd backendcd backendHazardNet is an intelligent mobile application that leverages artificial intelligence and computer vision to detect road hazards in real-time. The system combines TensorFlow Lite machine learning models, Google Maps integration, and cloud infrastructure to create a comprehensive road safety solution.**License:** MIT  
 
 npm install
 
-npm start
+npm install
 
-```
+# Configure environment
 
-### Key Highlights---
+cp .env.example .envnpm start
 
-### Build APK
+# Edit .env with your credentials
+
+``````
 
 
+
+### Local Development### Key Highlights---
+
+
+
+**Backend:**### Build APK
 
 ```bash
 
-flutter build apk --release- **Real-time Detection**: On-device ML inference with <500ms latency**Platform:** Android (Flutter)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)
+cd backend
+
+npm start
+
+# Server runs on http://localhost:8080```bash
 
 ```
 
-- **Community-Driven**: Collaborative hazard reporting and verification system
+flutter build apk --release- **Real-time Detection**: On-device ML inference with <500ms latency**Platform:** Android (Flutter)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)
 
-## API Endpoints
+**Flutter App:**
 
-- **Scalable Backend**: AWS-hosted infrastructure with auto-scaling capabilities## System Architecture
+```bash```
 
-**Authentication**
+flutter run
 
-- `POST /api/auth/register` - Register user- **Production-Ready**: Full CI/CD pipeline with automated deployments
+# Or build APK- **Community-Driven**: Collaborative hazard reporting and verification system
 
-- `POST /api/auth/login` - Login user
+flutter build apk --release
+
+```## API Endpoints
 
 
 
-**Hazards**
+### Deploy to AWS- **Scalable Backend**: AWS-hosted infrastructure with auto-scaling capabilities## System Architecture
+
+
+
+```bash**Authentication**
+
+# Backend deployment (via GitHub Actions)
+
+git push origin main- `POST /api/auth/register` - Register user- **Production-Ready**: Full CI/CD pipeline with automated deployments
+
+
+
+# Manual deployment- `POST /api/auth/login` - Login user
+
+cd backend
+
+eb init
+
+eb create
+
+eb deploy**Hazards**
+
+```
 
 - `GET /api/hazards` - Get all hazards---
 
+---
+
 - `GET /api/hazards/nearby` - Get nearby hazards
+
+## 📁 Project Structure
 
 - `POST /api/hazards/report` - Report hazard### Component Overview
 
-
-
-**Trips**## Features
-
-- `POST /api/trips/start` - Start trip
-
-- `POST /api/trips/end` - End trip---![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)
-
-
-
-## Configuration### Core Capabilities
-
-
-
-Create `.env` file:**Mobile Application (Flutter)**
-
-
-
-```env- **AI-Powered Detection**: TensorFlow Lite model (3.2 MB INT8) detects potholes, obstacles, and speed breakers
-
-API_BASE_URL=http://your-api-url/api
-
-GOOGLE_MAPS_API_KEY=your_maps_key- **Interactive Mapping**: Google Maps integration with real-time location tracking and hazard visualization- Cross-platform development using Flutter framework
-
-ELEVENLABS_API_KEY=your_voice_key
-
-```- **Voice Alerts**: ElevenLabs TTS integration for audio warnings of approaching hazards
-
-
-
-Backend `.env`:- **User Authentication**: Secure JWT-based authentication with bcrypt password encryption- Real-time camera processing for hazard detection
-
-
-
-```env- **Trip Tracking**: Complete journey recording with metrics and analytics
-
-DATABASE_URL=postgresql://user:pass@host:5432/db
-
-JWT_SECRET=your_secret_key- **Community Verification**: Multi-user hazard confirmation system- GPS-based location tracking and mapping## Overview![Platform](https://img.shields.io/badge/Platform-Android-green)![Platform](https://img.shields.io/badge/Platform-Android-green)
-
-NODE_ENV=production
-
-```- **Damage Scoring**: Vehicle wear tracking based on hazard exposure
-
-
-
-## Project Structure- State management using BLoC pattern
-
-
-
-```---
+```
 
 HazardNet/
 
-├── lib/              # Flutter app source- Offline-first data synchronization
+├── 📱 lib/                      # Flutter application
 
-├── backend/          # Node.js backend
+│   ├── bloc/                    # BLoC state management**Trips**## Features
 
-├── android/          # Android config## Architecture
+│   │   ├── auth/               # Authentication BLoC
 
-├── assets/           # Images and resources
+│   │   ├── emergency/          # Emergency BLoC- `POST /api/trips/start` - Start trip
 
-└── detection_models/ # ML models
+│   │   └── hazard/             # Hazard detection BLoC
+
+│   ├── core/                    # Core utilities- `POST /api/trips/end` - End trip---![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)
+
+│   │   ├── constants/          # App constants & config
+
+│   │   ├── network/            # API services
+
+│   │   └── utils/              # Helper functions
+
+│   ├── data/                    # Data layer## Configuration### Core Capabilities
+
+│   │   ├── models/             # Data models
+
+│   │   └── repositories/       # Data repositories
+
+│   ├── screens/                 # UI screens
+
+│   │   ├── auth/               # Login/RegisterCreate `.env` file:**Mobile Application (Flutter)**
+
+│   │   ├── home/               # Dashboard
+
+│   │   ├── emergency/          # SOS screen
+
+│   │   └── authority/          # Authority dashboard
+
+│   └── widgets/                 # Reusable widgets```env- **AI-Powered Detection**: TensorFlow Lite model (3.2 MB INT8) detects potholes, obstacles, and speed breakers
+
+├── 🖥️ backend/                   # Node.js backend
+
+│   ├── routes/                  # API routesAPI_BASE_URL=http://your-api-url/api
+
+│   │   ├── auth.js             # Authentication
+
+│   │   ├── emergency.js        # Emergency endpointsGOOGLE_MAPS_API_KEY=your_maps_key- **Interactive Mapping**: Google Maps integration with real-time location tracking and hazard visualization- Cross-platform development using Flutter framework
+
+│   │   ├── alerts.js           # Alert management
+
+│   │   └── authority.js        # Authority endpointsELEVENLABS_API_KEY=your_voice_key
+
+│   ├── middleware/              # Express middleware
+
+│   │   └── auth.js             # JWT verification```- **Voice Alerts**: ElevenLabs TTS integration for audio warnings of approaching hazards
+
+│   ├── services/                # Business logic
+
+│   └── server.js               # Express app entry
+
+├── 🗄️ database/                  # Database files
+
+│   ├── schema.sql              # Database schemaBackend `.env`:- **User Authentication**: Secure JWT-based authentication with bcrypt password encryption- Real-time camera processing for hazard detection
+
+│   ├── migrations.sql          # Migration scripts
+
+│   └── seed_data.sql           # Sample data
+
+├── 🤖 detection_models/          # AI models
+
+│   └── unified_hazards_int8.tflite```env- **Trip Tracking**: Complete journey recording with metrics and analytics
+
+├── 🐳 .github/workflows/        # CI/CD pipelines
+
+│   └── deploy.yml              # AWS deploymentDATABASE_URL=postgresql://user:pass@host:5432/db
+
+└── 📄 README.md                 # This file
+
+```JWT_SECRET=your_secret_key- **Community Verification**: Multi-user hazard confirmation system- GPS-based location tracking and mapping## Overview![Platform](https://img.shields.io/badge/Platform-Android-green)![Platform](https://img.shields.io/badge/Platform-Android-green)
+
+
+
+---NODE_ENV=production
+
+
+
+## 🔌 API Endpoints```- **Damage Scoring**: Vehicle wear tracking based on hazard exposure
+
+
+
+### Authentication
+
+```http
+
+POST /api/auth/register     # Register new user## Project Structure- State management using BLoC pattern
+
+POST /api/auth/login        # User login
+
+GET  /api/auth/status       # Check auth status
+
+POST /api/auth/logout       # Logout user
+
+``````---
+
+
+
+### EmergencyHazardNet/
+
+```http
+
+POST /api/emergency/sos           # Create SOS alert├── lib/              # Flutter app source- Offline-first data synchronization
+
+GET  /api/emergency/active        # Get active alerts
+
+GET  /api/emergency/history/:id   # Get user history├── backend/          # Node.js backend
+
+PUT  /api/emergency/:id/resolve   # Resolve alert
+
+```├── android/          # Android config## Architecture
+
+
+
+### Alerts├── assets/           # Images and resources
+
+```http
+
+GET  /api/alerts              # Get all alerts└── detection_models/ # ML models
+
+GET  /api/alerts/:id          # Get specific alert
+
+POST /api/alerts              # Create alert```
+
+PUT  /api/alerts/:id          # Update alert
+
+DELETE /api/alerts/:id        # Delete alert### System Components
 
 ```
 
-### System Components
-
 ## Deployment
 
-**Backend Infrastructure (Node.js/Express)**HazardNet is an intelligent mobile application that detects road hazards in real-time using AI-powered computer vision. The app combines machine learning models, Google Maps integration, voice alerts, and community reporting to help drivers navigate safely and avoid accidents.![License](https://img.shields.io/badge/License-MIT-green)![License](https://img.shields.io/badge/License-MIT-green)
+### Authority
 
-Automatic deployment via GitHub Actions to AWS Elastic Beanstalk on push to main branch.
+```http**Backend Infrastructure (Node.js/Express)**HazardNet is an intelligent mobile application that detects road hazards in real-time using AI-powered computer vision. The app combines machine learning models, Google Maps integration, voice alerts, and community reporting to help drivers navigate safely and avoid accidents.![License](https://img.shields.io/badge/License-MIT-green)![License](https://img.shields.io/badge/License-MIT-green)
+
+GET  /api/authority/dashboard     # Authority dashboard data
+
+GET  /api/authority/alerts        # Alerts for authorityAutomatic deployment via GitHub Actions to AWS Elastic Beanstalk on push to main branch.
+
+PUT  /api/authority/verify/:id    # Verify user
+
+POST /api/authority/broadcast     # Broadcast message```
 
 ```
 
 ## Contributing
 
+---
+
 ┌─────────────────┐- RESTful API server with Express.js
+
+## 💡 How It Works
 
 1. Fork the repository
 
-2. Create feature branch│  Flutter App    │ ◄── User Interface Layer
+1. **Hazard Detection**: AI model processes camera feed in real-time
 
-3. Commit changes
+2. **Alert Generation**: System creates alert with location and hazard type2. Create feature branch│  Flutter App    │ ◄── User Interface Layer
 
-4. Push to branch│  (Dart 3.9.2)   │- User authentication and authorization
+3. **Authority Notification**: Nearby authorities receive instant notification
 
-5. Create Pull Request
+4. **Emergency Response**: Authority can coordinate response via dashboard3. Commit changes
 
-└────────┬────────┘
+5. **Status Updates**: Real-time status updates to all parties
 
-## License
+6. **Resolution**: Alert marked resolved with response summary4. Push to branch│  (Dart 3.9.2)   │- User authentication and authorization
 
-         │- Data persistence and analytics
 
-MIT License
 
-         ▼
+---5. Create Pull Request
 
-## Contact
 
-┌─────────────────┐- Real-time notification systemBuilt for the i.Mobilothon Competition, HazardNet represents a complete solution for road safety with both mobile and backend infrastructure.![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
 
-GitHub: [@Ayush-1789](https://github.com/Ayush-1789)
+## 🧪 Testing└────────┬────────┘
+
+
+
+### Test the Live API## License
+
+
+
+```bash         │- Data persistence and analytics
+
+# Health check
+
+curl http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/healthMIT License
+
+
+
+# Test authentication         ▼
+
+curl -X POST http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com/api/auth/login \
+
+  -H "Content-Type: application/json" \## Contact
+
+  -d '{"email": "test@example.com", "password": "password123"}'
+
+```┌─────────────────┐- Real-time notification systemBuilt for the i.Mobilothon Competition, HazardNet represents a complete solution for road safety with both mobile and backend infrastructure.![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
+
+
+
+### Local TestingGitHub: [@Ayush-1789](https://github.com/Ayush-1789)
+
 │   REST API      │ ◄── Backend Services
 
-│  (Node.js 20)   │- Database management with PostgreSQL
+```bash
+
+# Run Flutter tests│  (Node.js 20)   │- Database management with PostgreSQL
+
+flutter test
 
 └────────┬────────┘
 
-         │
+# Run backend tests
+
+cd backend         │
+
+npm test
 
          ▼
 
-┌─────────────────┐**Cloud Services (AWS)**
+# Test specific endpoint
+
+curl http://localhost:8080/health┌─────────────────┐**Cloud Services (AWS)**
+
+```
 
 │   PostgreSQL    │ ◄── Data Persistence
 
+---
+
 │   (AWS RDS)     │- Application hosting via Elastic Beanstalk---
+
+## ⚙️ Configuration
 
 └─────────────────┘
 
+### Environment Variables
+
 ```- Relational database service (RDS)
 
+**Backend (`.env`)**
 
+```env
 
-### Technology Stack- Automated CI/CD pipeline via GitHub Actions
+PORT=8080
 
+DATABASE_URL=postgresql://user:pass@host:5432/dbname### Technology Stack- Automated CI/CD pipeline via GitHub Actions
 
+JWT_SECRET=your_jwt_secret_key
+
+NODE_ENV=production
+
+```
 
 **Frontend**- Auto-scaling and load balancing
 
-- Flutter 3.24.5 with Dart 3.9.2
+**Flutter (`lib/core/constants/app_constants.dart`)**
 
-- BLoC pattern for state management## Core Features**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.
+```dart- Flutter 3.24.5 with Dart 3.9.2
 
-- Google Maps Flutter SDK
+class AppConstants {
+
+  static const String apiUrl = 'http://your-api-url/api';- BLoC pattern for state management## Core Features**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.
+
+  static const String googleMapsKey = 'YOUR_GOOGLE_MAPS_KEY';
+
+}- Google Maps Flutter SDK
+
+```
 
 - TensorFlow Lite for ML inference**Machine Learning Model**
 
-
-
-**Backend**- TensorFlow Lite INT8 quantized model
-
-- Node.js 20.x runtime
-
-- Express.js web framework- Custom training on Indian road datasets
-
-- PostgreSQL database
-
-- JWT authentication- On-device inference for minimal latency### Real-Time Hazard Detection
+### AWS Setup
 
 
 
-**Infrastructure**- GPU acceleration support
+1. Create RDS PostgreSQL instance
+
+2. Create Elastic Beanstalk application**Backend**- TensorFlow Lite INT8 quantized model
+
+3. Configure GitHub secrets:
+
+   - `AWS_ACCESS_KEY_ID`- Node.js 20.x runtime
+
+   - `AWS_SECRET_ACCESS_KEY`
+
+4. Push to trigger deployment- Express.js web framework- Custom training on Indian road datasets
+
+
+
+---- PostgreSQL database
+
+
+
+## 📄 License- JWT authentication- On-device inference for minimal latency### Real-Time Hazard Detection
+
+
+
+This project is licensed under the MIT License.
+
+
+
+```**Infrastructure**- GPU acceleration support
+
+MIT License
 
 - AWS Elastic Beanstalk (Application hosting)
 
+Copyright (c) 2025 HazardNet Team
+
 - AWS RDS (Database management)- AI-powered detection using TensorFlow Lite model (3.2 MB INT8 quantized)
 
-- GitHub Actions (CI/CD pipeline)
+Permission is hereby granted, free of charge, to any person obtaining a copy
 
----
+of this software and associated documentation files (the "Software"), to deal- GitHub Actions (CI/CD pipeline)
 
----
+in the Software without restriction, including without limitation the rights
 
-- Identifies potholes, obstacles, speed breakers, and road hazardsBuilt for the **i.Mobilothon Competition**, this comprehensive solution combines **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.Built for the **i.Mobilothon Competition**, this comprehensive solution combines **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell---
+
+copies of the Software, and to permit persons to whom the Software is
+
+furnished to do so, subject to the following conditions:---
+
+
+
+The above copyright notice and this permission notice shall be included in all- Identifies potholes, obstacles, speed breakers, and road hazardsBuilt for the **i.Mobilothon Competition**, this comprehensive solution combines **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.Built for the **i.Mobilothon Competition**, this comprehensive solution combines **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.
+
+copies or substantial portions of the Software.
 
 ## Installation
 
-## Technology Stack
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 
-### Prerequisites
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,## Technology Stack
 
-- Processes video frames at 256x256 resolution
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 
-Ensure you have the following installed:
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER### Prerequisites
 
-- [Flutter SDK](https://flutter.dev) (3.24.5+)### Frontend Development
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 
-- [Node.js](https://nodejs.org) (20.x+)
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE- Processes video frames at 256x256 resolution
 
-- [Git](https://git-scm.com)| Technology | Version | Purpose |- Background monitoring with motion detection
+SOFTWARE.
 
-- Android Studio with SDK
+```Ensure you have the following installed:
 
-|-----------|---------|---------|
 
-### Quick Start
 
-| Flutter | 3.24.5 | Cross-platform mobile framework |- GPU-accelerated inference for optimal performance
+---- [Flutter SDK](https://flutter.dev) (3.24.5+)### Frontend Development
 
-1. **Clone the repository**
 
-   ```bash| Dart | 3.9.2 | Programming language |
 
-   git clone https://github.com/Ayush-1789/HazardNet.git
+## 🤝 Contributing- [Node.js](https://nodejs.org) (20.x+)
 
-   cd HazardNet| Google Maps | Latest | Map integration and visualization |------
+
+
+Contributions are welcome! Please feel free to submit a Pull Request.- [Git](https://git-scm.com)| Technology | Version | Purpose |- Background monitoring with motion detection
+
+
+
+1. Fork the repository- Android Studio with SDK
+
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)|-----------|---------|---------|
+
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+
+5. Open a Pull Request### Quick Start
+
+
+
+---| Flutter | 3.24.5 | Cross-platform mobile framework |- GPU-accelerated inference for optimal performance
+
+
+
+### ⭐ Star this repo if you find it helpful!1. **Clone the repository**
+
+
+
+Made with ❤️ using Flutter, AWS, and TensorFlow Lite   ```bash| Dart | 3.9.2 | Programming language |
+
+
+
+---   git clone https://github.com/Ayush-1789/HazardNet.git
+
+
+
+**🚨 [Live Demo](http://hazardnet-production.eba-74z3ihsf.us-east-1.elasticbeanstalk.com)** • **📝 [Report Bug](https://github.com/Ayush-1789/HazardNet/issues)** • **💡 [Request Feature](https://github.com/Ayush-1789/HazardNet/issues)**   cd HazardNet| Google Maps | Latest | Map integration and visualization |------
+
 
    ```
 
