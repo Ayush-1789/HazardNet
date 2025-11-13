@@ -10,19 +10,7 @@ AI-powered hazard detection system with real-time alerts and emergency response.
 
 AI-powered hazard detection system with real-time alerts and emergency response. Mobile app (Flutter) + Backend (Node.js) on AWS.
 
-## 📱 Screenshots
-
-| Dashboard | Hazard Map | Detection |
-|-----------|-----------|-----------|
-| ![Dashboard](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/dashboard.jpg) | ![Map](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/map.jpg) | ![Detection](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/detection.jpg) |
-| Home screen with journey stats, hazards count, and verified reports | Interactive map showing all hazards with real-time updates | Camera feed with AI hazard detection and bounding boxes |
-
-| Hazard Details | Alerts | Scan Screen |
-|-----------|-----------|-----------|
-| ![Details](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/details.jpg) | ![Alerts](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/alerts.jpg) | ![Scan](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/scan.jpg) |
-| Full information about detected hazards with photo and location | Real-time notifications for approaching hazards and warnings | Active hazard detection interface with FPS metrics |
-
-## 🚀 Features
+##  Features
 
 ### Core Features (MVP)
 - ✅ **Real-time Hazard Detection** - Camera feed with frame processing ready for ML model integration
@@ -45,6 +33,18 @@ AI-powered hazard detection system with real-time alerts and emergency response.
 - 🚫 Obstacles on Road
 - 🛑 Closed/Blocked Roads
 - 🚦 Lane Blockages
+
+## 📱 Screenshots
+
+| Dashboard | Hazard Map | Detection |
+|-----------|-----------|-----------|
+| ![Dashboard](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/dashboard.jpg) | ![Map](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/map.jpg) | ![Detection](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/detection.jpg) |
+| Home screen with journey stats, hazards count, and verified reports | Interactive map showing all hazards with real-time updates | Camera feed with AI hazard detection and bounding boxes |
+
+| Hazard Details | Alerts | Scan Screen |
+|-----------|-----------|-----------|
+| ![Details](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/details.jpg) | ![Alerts](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/alerts.jpg) | ![Scan](https://raw.githubusercontent.com/Ayush-1789/HazardNet/main/assets/screenshots/scan.jpg) |
+| Full information about detected hazards with photo and location | Real-time notifications for approaching hazards and warnings | Active hazard detection interface with FPS metrics |
 
 ## 🏗️ Tech Stack
 
