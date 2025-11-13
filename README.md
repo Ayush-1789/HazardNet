@@ -305,6 +305,8 @@ The camera feed sends frames to the ML model API. Update `lib/bloc/camera/camera
 
 ## 📄 License
 
+This project is licensed under the MIT License.
+
 MIT License
 
 Copyright (c) 2025 HazardNet Team
