@@ -8,7 +8,19 @@
 
 AI-powered hazard detection system with real-time alerts and emergency response. Mobile app (Flutter) + Backend (Node.js) on AWS.
 
-## 🚀 Features
+## � Screenshots
+
+| Dashboard | Hazard Map | Detection |
+|-----------|-----------|-----------|
+| ![Dashboard](https://github.com/Ayush-1789/HazardNet/raw/main/assets/screenshots/dashboard.png) | ![Map](https://github.com/Ayush-1789/HazardNet/raw/main/assets/screenshots/map.png) | ![Detection](https://github.com/Ayush-1789/HazardNet/raw/main/assets/screenshots/detection.png) |
+| **Home Dashboard** - Journey stats, hazards count, verified reports | **Hazard Map** - Interactive map with color-coded markers, nearby hazards list | **Real-time Detection** - Camera feed with ML detection, hazard bounding boxes |
+
+| Detection Details | Alerts | Scan Screen |
+|-----------|-----------|-----------|
+| ![Details](https://github.com/Ayush-1789/HazardNet/raw/main/assets/screenshots/details.png) | ![Alerts](https://github.com/Ayush-1789/HazardNet/raw/main/assets/screenshots/alerts.png) | ![Scan](https://github.com/Ayush-1789/HazardNet/raw/main/assets/screenshots/scan.png) |
+| **Hazard Details** - Full hazard info, photo, location, confidence score | **Alerts** - Real-time notifications for hazards, road closures, vehicle maintenance | **Scan Screen** - Active detection with FPS metrics and capture buttons |
+
+## �🚀 Features
 
 ### Core Features (MVP)
 - ✅ **Real-time Hazard Detection** - Camera feed with frame processing ready for ML model integration
