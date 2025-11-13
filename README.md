@@ -1,52 +1,544 @@
-﻿# 🚗 HazardNet - AI-Powered Road Hazard Detection System# ≡ƒÜù HazardNet - AI-Powered Road Hazard Detection System# ≡ƒÜù HazardNet - AI-Powered Road Hazard Detection System
+﻿# 🚗 HazardNet - AI-Powered Road Hazard Detection System# 🚗 HazardNet - AI-Powered Road Hazard Detection System
 
 
 
-![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)
+![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)
 
-![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)
+![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)
 
-![Platform](https://img.shields.io/badge/Platform-Android-green)![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)![Flutter](https://img.shields.io/badge/Flutter-3.24.5-blue)
-
-![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)
-
-![License](https://img.shields.io/badge/License-MIT-green)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)![Dart](https://img.shields.io/badge/Dart-3.9.2-blue)
-
-![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
+![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)
 
 ![Platform](https://img.shields.io/badge/Platform-Android-green)![Platform](https://img.shields.io/badge/Platform-Android-green)
 
-**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.
+![License](https://img.shields.io/badge/License-MIT-green)![License](https://img.shields.io/badge/License-MIT-green)
 
-![TensorFlow Lite](https://img.shields.io/badge/TensorFlow-Lite-orange)![License](https://img.shields.io/badge/License-MIT-green)
+![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
 
-## 🏆 Built for i.Mobilothon Competition
 
-![License](https://img.shields.io/badge/License-MIT-green)![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 
-A comprehensive solution combining **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.
+**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.
 
-![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
 
----
 
-**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.
+Built for the **i.Mobilothon Competition**, this comprehensive solution combines **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.Built for the **i.Mobilothon Competition**, this comprehensive solution combines **Machine Learning**, **Google Maps**, **Voice Alerts**, and **Community Reporting** to make roads safer for everyone.
 
-## ✨ Key Features
 
-**HazardNet** is an intelligent road safety application that uses **AI-powered computer vision** with **TensorFlow Lite** to detect road hazards in real-time, helping drivers avoid accidents and navigate safely.
 
-### 🤖 AI-Powered Hazard Detection
+------
 
-- **TensorFlow Lite Model**: `unified_hazards_int8.tflite` (3.2 MB INT8 quantized)## ≡ƒÅå Built for i.Mobilothon Competition
 
-- **Real-time Detection**: Detects potholes, obstacles, and speed breakers at 256×256 resolution
 
-- **Background Processing**: Continuous monitoring with gyroscope-based motion detection## ≡ƒÅå Built for i.Mobilothon Competition
+## ✨ Key Features## ✨ Key Features
 
-- **GPU Acceleration**: Optimized with ProGuard rules for maximum performance
 
-- **High Accuracy**: Latest model with improved detection capabilitiesA comprehensive solution combining **Machine Learning**, **Community Reporting**, and **Real-time Alerts** to make roads safer for everyone.
+
+### 🤖 AI-Powered Hazard Detection### 🤖 AI-Powered Hazard Detection
+
+- **TensorFlow Lite Model**: `unified_hazards_int8.tflite` (3.2 MB INT8 quantized)- **TensorFlow Lite Model**: `unified_hazards_int8.tflite` (3.2 MB INT8 quantized)
+
+- **Real-time Detection**: Detects potholes, obstacles, and speed breakers at 256×256 resolution- **Real-time Detection**: Detects potholes, obstacles, and speed breakers at 256×256 resolution
+
+- **Background Processing**: Continuous monitoring with gyroscope-based motion detection- **Background Processing**: Continuous monitoring with gyroscope-based motion detection
+
+- **GPU Acceleration**: Optimized with ProGuard rules for maximum performance- **GPU Acceleration**: Optimized with ProGuard rules for maximum performance
+
+- **High Accuracy**: Latest model with improved detection capabilities- **High Accuracy**: Latest model with improved detection capabilities
+
+
+
+### 🗺️ Google Maps Integration### 🗺️ Google Maps Integration
+
+- **Native Google Maps**: Full integration with Google Maps Platform- **Native Google Maps**: Full integration with Google Maps Platform
+
+- **Interactive Hazard Map**: Visual markers for all detected and reported hazards- **Interactive Hazard Map**: Visual markers for all detected and reported hazards
+
+- **Real-time Location**: Live GPS tracking with location-based alerts- **Real-time Location**: Live GPS tracking with location-based alerts
+
+- **Community Markers**: Color-coded pins showing hazards from all users- **Community Markers**: Color-coded pins showing hazards from all users
+
+  - 🔵 Blue: Your reported hazards  - 🔵 Blue: Your reported hazards
+
+  - 🟠 Orange: Community-reported hazards  - 🟠 Orange: Community-reported hazards
+
+  - ✅ Green: Verified hazards  - ✅ Green: Verified hazards
+
+- **Multiple Map Types**: Normal, Satellite, Hybrid, Terrain views- **Multiple Map Types**: Normal, Satellite, Hybrid, Terrain views
+
+- **Custom Styling**: Dark mode support with custom map themes- **Custom Styling**: Dark mode support with custom map themes
+
+- **Gesture Controls**: Zoom, rotate, tilt for 3D views- **Gesture Controls**: Zoom, rotate, tilt for 3D views
+
+
+
+### 🔊 Voice Assistant (ElevenLabs TTS)### 🔊 Voice Assistant (ElevenLabs TTS)
+
+- **AI-Powered Voice Alerts**: Natural-sounding text-to-speech warnings- **AI-Powered Voice Alerts**: Natural-sounding text-to-speech warnings
+
+- **Real-time Notifications**: Voice alerts for approaching hazards- **Real-time Notifications**: Voice alerts for approaching hazards
+
+- **Customizable Settings**:- **Customizable Settings**:
+
+  - Adjust voice characteristics  - Adjust voice characteristics
+
+  - Control speaking speed  - Control speaking speed
+
+  - Set warning distance thresholds  - Set warning distance thresholds
+
+- **Smart Templates**: Pre-configured messages for different hazard types- **Smart Templates**: Pre-configured messages for different hazard types
+
+
+
+### 👥 Community Features### 👥 Community Features
+
+- **User Authentication**: Secure JWT-based signup/login- **User Authentication**: Secure JWT-based signup/login
+
+- **Hazard Reporting**: Submit hazards with photos, location, and details- **Hazard Reporting**: Submit hazards with photos, location, and details
+
+- **Community Verification**: Multi-signature verification system- **Community Verification**: Multi-signature verification system
+
+- **Real-time Alerts**: Push notifications for nearby hazards- **Real-time Alerts**: Push notifications for nearby hazards
+
+- **User Profiles**: Track driving statistics and damage scores- **User Profiles**: Track driving statistics and damage scores
+
+
+
+### 📊 Advanced Analytics### 📊 Advanced Analytics
+
+- **Vehicle Damage Tracking**: Monitor vehicle wear and tear- **Vehicle Damage Tracking**: Monitor vehicle wear and tear
+
+- **Trip History**: Record and analyze driving patterns- **Trip History**: Record and analyze driving patterns
+
+- **Fleet Analytics**: B2B features for fleet management- **Fleet Analytics**: B2B features for fleet management
+
+- **Performance Metrics**: Detection accuracy and response times- **Performance Metrics**: Detection accuracy and response times
+
+
+
+------
+
+
+
+## 🛠️ Tech Stack## 🛠️ Tech Stack
+
+
+
+### Frontend (Flutter)### Frontend (Flutter)
+
+- **Framework**: Flutter 3.24.5- **Framework**: Flutter 3.24.5
+
+- **Language**: Dart 3.9.2- **Language**: Dart 3.9.2
+
+- **State Management**: BLoC Pattern- **State Management**: BLoC Pattern
+
+- **Maps**: Google Maps Flutter- **Maps**: Google Maps Flutter
+
+- **ML**: TensorFlow Lite Flutter- **ML**: TensorFlow Lite Flutter
+
+- **Networking**: HTTP/Dio- **Networking**: HTTP/Dio
+
+- **Storage**: Shared Preferences, Hive- **Storage**: Shared Preferences, Hive
+
+- **UI**: Material Design 3- **UI**: Material Design 3
+
+
+
+### Backend (Node.js)### Backend (Node.js)
+
+- **Runtime**: Node.js 20 (AWS Elastic Beanstalk)- **Runtime**: Node.js 20 (AWS Elastic Beanstalk)
+
+- **Framework**: Express.js- **Framework**: Express.js
+
+- **Database**: PostgreSQL (AWS RDS)- **Database**: PostgreSQL (AWS RDS)
+
+- **Authentication**: JWT- **Authentication**: JWT
+
+- **ORM**: Direct SQL queries- **ORM**: Direct SQL queries
+
+- **Deployment**: AWS Elastic Beanstalk- **Deployment**: AWS Elastic Beanstalk
+
+
+
+### AI/ML### AI/ML
+
+- **Model**: TensorFlow Lite INT8 quantized- **Model**: TensorFlow Lite INT8 quantized
+
+- **Training**: Custom dataset for Indian road conditions- **Training**: Custom dataset for Indian road conditions
+
+- **Inference**: Real-time on-device processing- **Inference**: Real-time on-device processing
+
+- **Optimization**: GPU acceleration, background processing- **Optimization**: GPU acceleration, background processing
+
+
+
+### Cloud Services### Cloud Services
+
+- **Hosting**: AWS Elastic Beanstalk- **Hosting**: AWS Elastic Beanstalk
+
+- **Database**: AWS RDS PostgreSQL- **Database**: AWS RDS PostgreSQL
+
+- **CI/CD**: GitHub Actions- **CI/CD**: GitHub Actions
+
+- **Maps**: Google Maps Platform- **Maps**: Google Maps Platform
+
+- **Voice**: ElevenLabs TTS API- **Voice**: ElevenLabs TTS API
+
+
+
+------
+
+
+
+## 🚀 Installation## 🚀 Installation
+
+
+
+### Prerequisites### Prerequisites
+
+- **Flutter SDK** (3.24.5 or later)- **Flutter SDK** (3.24.5 or later)
+
+- **Android Studio** with Android SDK- **Android Studio** with Android SDK
+
+- **Git**- **Git**
+
+- **Node.js** (for backend development)- **Node.js** (for backend development)
+
+
+
+### Clone the Repository### Clone the Repository
+
+```bash```bash
+
+git clone https://github.com/Ayush-1789/HazardNet.gitgit clone https://github.com/Ayush-1789/HazardNet.git
+
+cd HazardNetcd HazardNet
+
+``````
+
+
+
+### Setup Flutter App### Setup Flutter App
+
+```bash```bash
+
+# Get dependencies# Get dependencies
+
+flutter pub getflutter pub get
+
+
+
+# Configure environment# Configure environment
+
+cp .env.example .envcp .env.example .env
+
+# Edit .env with your API keys# Edit .env with your API keys
+
+
+
+# Run on connected device# Run on connected device
+
+flutter runflutter run
+
+``````
+
+
+
+### Setup Backend (Development)### Setup Backend (Development)
+
+```bash```bash
+
+cd backendcd backend
+
+
+
+# Install dependencies# Install dependencies
+
+npm installnpm install
+
+
+
+# Setup environment# Setup environment
+
+cp .env.example .envcp .env.example .env
+
+# Edit .env with database and JWT settings# Edit .env with database and JWT settings
+
+
+
+# Run migrations# Run migrations
+
+npm run migratenpm run migrate
+
+
+
+# Start server# Start server
+
+npm startnpm start
+
+``````
+
+
+
+### Build APK### Build APK
+
+```bash```bash
+
+# Build release APK# Build release APK
+
+flutter build apk --releaseflutter build apk --release
+
+
+
+# APK location: build/app/outputs/flutter-apk/app-release.apk# APK location: build/app/outputs/flutter-apk/app-release.apk
+
+``````
+
+
+
+------
+
+
+
+## 📱 Usage## 📱 Usage
+
+
+
+### First Time Setup### First Time Setup
+
+1. **Install APK** on Android device1. **Install APK** on Android device
+
+2. **Grant Permissions**: Location, Camera, Storage2. **Grant Permissions**: Location, Camera, Storage
+
+3. **Create Account**: Sign up with email and password3. **Create Account**: Sign up with email and password
+
+4. **Enable Features**: Voice assistant, notifications4. **Enable Features**: Voice assistant, notifications
+
+
+
+### Driving Mode### Driving Mode
+
+1. **Start Navigation**: Open app and allow location access1. **Start Navigation**: Open app and allow location access
+
+2. **AI Detection**: Camera automatically detects hazards2. **AI Detection**: Camera automatically detects hazards
+
+3. **Voice Alerts**: Get audio warnings for approaching dangers3. **Voice Alerts**: Get audio warnings for approaching dangers
+
+4. **Report Hazards**: Tap to report new hazards with photos4. **Report Hazards**: Tap to report new hazards with photos
+
+5. **View Map**: See community-reported hazards in real-time5. **View Map**: See community-reported hazards in real-time
+
+
+
+### Hazard Reporting### Hazard Reporting
+
+1. **Detect Hazard**: App automatically detects via camera1. **Detect Hazard**: App automatically detects via camera
+
+2. **Manual Report**: Tap screen to report additional hazards2. **Manual Report**: Tap screen to report additional hazards
+
+3. **Add Details**: Include photos, severity, description3. **Add Details**: Include photos, severity, description
+
+4. **Verification**: Community voting system for accuracy4. **Verification**: Community voting system for accuracy
+
+
+
+------
+
+
+
+## 🔧 API Documentation## 🔧 API Documentation
+
+
+
+### Authentication Endpoints### Authentication Endpoints
+
+- `POST /api/auth/register` - User registration- `POST /api/auth/register` - User registration
+
+- `POST /api/auth/login` - User login- `POST /api/auth/login` - User login
+
+- `GET /api/auth/status` - Check authentication status- `GET /api/auth/status` - Check authentication status
+
+- `GET /api/auth/profile` - Get user profile- `GET /api/auth/profile` - Get user profile
+
+
+
+### Hazard Endpoints### Hazard Endpoints
+
+- `GET /api/hazards` - List all hazards- `GET /api/hazards` - List all hazards
+
+- `GET /api/hazards/nearby` - Get hazards near location- `GET /api/hazards/nearby` - Get hazards near location
+
+- `POST /api/hazards/report` - Report new hazard- `POST /api/hazards/report` - Report new hazard
+
+- `PUT /api/hazards/:id/verify` - Verify hazard- `PUT /api/hazards/:id/verify` - Verify hazard
+
+
+
+### Alert Endpoints### Alert Endpoints
+
+- `GET /api/alerts` - Get user alerts- `GET /api/alerts` - Get user alerts
+
+- `PUT /api/alerts/:id/read` - Mark alert as read- `PUT /api/alerts/:id/read` - Mark alert as read
+
+
+
+### Trip Endpoints### Trip Endpoints
+
+- `POST /api/trips/start` - Start trip tracking- `POST /api/trips/start` - Start trip tracking
+
+- `POST /api/trips/end` - End trip tracking- `POST /api/trips/end` - End trip tracking
+
+- `GET /api/trips/history` - Get trip history- `GET /api/trips/history` - Get trip history
+
+
+
+------
+
+
+
+## 🚀 Deployment## 🚀 Deployment
+
+
+
+### Backend Deployment (AWS)### Backend Deployment (AWS)
+
+The backend is automatically deployed to AWS Elastic Beanstalk via GitHub Actions.The backend is automatically deployed to AWS Elastic Beanstalk via GitHub Actions.
+
+
+
+**Requirements:****Requirements:**
+
+- AWS Account with EB and RDS access- AWS Account with EB and RDS access
+
+- GitHub repository secrets configured- GitHub repository secrets configured
+
+
+
+**Environment Variables:****Environment Variables:**
+
+```env```env
+
+DATABASE_URL=postgresql://user:password@host:5432/dbDATABASE_URL=postgresql://user:password@host:5432/db
+
+JWT_SECRET=your-secret-keyJWT_SECRET=your-secret-key
+
+NODE_ENV=productionNODE_ENV=production
+
+``````
+
+
+
+### Database Setup### Database Setup
+
+```sql```sql
+
+-- Run migrations on RDS-- Run migrations on RDS
+
+-- Schema includes: users, hazards, alerts, trips, etc.-- Schema includes: users, hazards, alerts, trips, etc.
+
+``````
+
+
+
+### CI/CD Pipeline### CI/CD Pipeline
+
+- **Trigger**: Push to `main` branch- **Trigger**: Push to `main` branch
+
+- **Build**: Node.js application- **Build**: Node.js application
+
+- **Deploy**: AWS Elastic Beanstalk- **Deploy**: AWS Elastic Beanstalk
+
+- **Database**: AWS RDS PostgreSQL- **Database**: AWS RDS PostgreSQL
+
+
+
+------
+
+
+
+## 🤝 Contributing## 🤝 Contributing
+
+
+
+1. **Fork** the repository1. **Fork** the repository
+
+2. **Create** feature branch (`git checkout -b feature/amazing-feature`)2. **Create** feature branch (`git checkout -b feature/amazing-feature`)
+
+3. **Commit** changes (`git commit -m 'Add amazing feature'`)3. **Commit** changes (`git commit -m 'Add amazing feature'`)
+
+4. **Push** to branch (`git push origin feature/amazing-feature`)4. **Push** to branch (`git push origin feature/amazing-feature`)
+
+5. **Open** Pull Request5. **Open** Pull Request
+
+
+
+### Development Guidelines### Development Guidelines
+
+- Follow Flutter best practices- Follow Flutter best practices
+
+- Use BLoC pattern for state management- Use BLoC pattern for state management
+
+- Write tests for new features- Write tests for new features
+
+- Update documentation- Update documentation
+
+- Ensure code quality with lints- Ensure code quality with lints
+
+
+
+------
+
+
+
+## 📄 License## 📄 License
+
+
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+
+------
+
+
+
+## 🙏 Acknowledgments## 🙏 Acknowledgments
+
+
+
+- **i.Mobilothon Competition** for the inspiration- **i.Mobilothon Competition** for the inspiration
+
+- **TensorFlow Lite** team for ML framework- **TensorFlow Lite** team for ML framework
+
+- **Google Maps Platform** for mapping services- **Google Maps Platform** for mapping services
+
+- **ElevenLabs** for voice synthesis- **ElevenLabs** for voice synthesis
+
+- **Flutter Community** for amazing framework- **Flutter Community** for amazing framework
+
+
+
+------
+
+
+
+## 📞 Support## 📞 Support
+
+
+
+For questions or issues:For questions or issues:
+
+- Create an issue on GitHub- Create an issue on GitHub
+
+- Email: [your-email@example.com]- Email: [your-email@example.com]
+
+- Documentation: [Link to docs]- Documentation: [Link to docs]
+
+
+
+------
+
+
+
+**Made with ❤️ for safer roads****Made with ❤️ for safer roads**
 
 
 
