@@ -12,17 +12,15 @@ AI-powered hazard detection system with real-time alerts and emergency response.
 
 ## 📱 Screenshots
 
-**Dashboard** - Home screen with journey stats, hazards count, and verified reports
+| Dashboard | Hazard Map | Detection |
+|-----------|-----------|-----------|
+| ![Dashboard](assets/screenshots/dashboard.png) | ![Map](assets/screenshots/map.png) | ![Detection](assets/screenshots/detection.png) |
+| Home screen with journey stats, hazards count, and verified reports | Interactive map showing all hazards with real-time updates | Camera feed with AI hazard detection and bounding boxes |
 
-**Hazard Map** - Interactive map showing all hazards with real-time updates
-
-**Real-time Detection** - Camera feed with AI hazard detection and bounding boxes
-
-**Hazard Details** - Full information about detected hazards with photo and location
-
-**Alerts** - Real-time notifications for approaching hazards and warnings
-
-**Scan Screen** - Active hazard detection interface with FPS metrics
+| Hazard Details | Alerts | Scan Screen |
+|-----------|-----------|-----------|
+| ![Details](assets/screenshots/details.png) | ![Alerts](assets/screenshots/alerts.png) | ![Scan](assets/screenshots/scan.png) |
+| Full information about detected hazards with photo and location | Real-time notifications for approaching hazards and warnings | Active hazard detection interface with FPS metrics |
 
 *Note: Add actual screenshots to `assets/screenshots/` folder with filenames: dashboard.png, map.png, detection.png, details.png, alerts.png, scan.png*
 
