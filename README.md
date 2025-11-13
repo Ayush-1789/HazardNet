@@ -8,9 +8,7 @@
 
 AI-powered hazard detection system with real-time alerts and emergency response. Mobile app (Flutter) + Backend (Node.js) on AWS.
 
-AI-powered hazard detection system with real-time alerts and emergency response. Mobile app (Flutter) + Backend (Node.js) on AWS.
-
-##  Features
+## 🚀 Features
 
 ### Core Features (MVP)
 - ✅ **Real-time Hazard Detection** - Camera feed with frame processing ready for ML model integration
@@ -119,7 +117,7 @@ git clone https://github.com/Ayush-1789/HazardNet.git
 cd HazardNet
 ```
 
-### Local Development (Recommended for now)
+### Local Development (In Progress)
 
 ```bash
 cd backend
@@ -142,7 +140,7 @@ npm start
 
 Server runs on `http://localhost:8080`
 
-### AWS Deployment (In Progress)
+### AWS Deployment (Recommended for Production)
 
 For production deployment on AWS Elastic Beanstalk:
 ```bash
@@ -151,7 +149,10 @@ eb init
 eb deploy
 ```
 
-**Note:** AWS deployment is currently being configured. Use local development for testing.
+**AWS Configuration:**
+- Elastic Beanstalk Environment: hazardnet-production
+- RDS PostgreSQL: Configured and running
+- CI/CD: GitHub Actions automated deployment
 
 ### Update App Configuration
 
@@ -302,8 +303,6 @@ The camera feed sends frames to the ML model API. Update `lib/bloc/camera/camera
 
 ---
 
-**Built with ❤️ for safer Indian roads**
-
 ## 📄 License
 
 MIT License
@@ -327,3 +326,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+**Built with ❤️ for safer Indian roads**
