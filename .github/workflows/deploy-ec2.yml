@@ -1,0 +1,46 @@
+name: Build & Deploy Backend to EC2
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Archive backend
+        working-directory: backend
+        run: |
+          mkdir -p build-artifact
+          tar -czf hazardnet-backend.tar.gz .
+          mv hazardnet-backend.tar.gz "$GITHUB_WORKSPACE"
+
+      - name: Upload artifact to S3
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws --version
+          aws s3 cp "$GITHUB_WORKSPACE/hazardnet-backend.tar.gz" "s3://${{ secrets.S3_BUCKET }}/hazardnet-backend.tar.gz"
+
+      - name: Trigger SSM Run Command to deploy on EC2
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo 'Running SSM document to download artifact and restart PM2 (requires instance-id in secrets or parameter store)'
+          aws ssm send-command --document-name "AWS-RunShellScript" --comment "Deploy HazardNet" --parameters commands="[ 'aws s3 cp s3://${{ secrets.S3_BUCKET }}/hazardnet-backend.tar.gz /tmp/hazardnet-backend.tar.gz', 'tar -xzf /tmp/hazardnet-backend.tar.gz -C /var/www/hazardnet', 'cd /var/www/hazardnet/backend && npm ci --production', 'pm2 restart hazardnet || pm2 start server.js --name hazardnet' ]" --instance-ids ${{ secrets.EC2_INSTANCE_ID }} --region ${{ secrets.AWS_REGION }}
