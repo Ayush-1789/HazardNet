@@ -178,3 +178,8 @@ firebase.json
 # Temporary deployment files
 hazardnet-aws.zip
 *.zip
+
+# Local deploy key (private) and trust policy
+.deploy_key
+.deploy_key.pub
+trust-policy.json

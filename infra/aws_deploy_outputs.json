@@ -1,5 +1,4 @@
 {
-    "SecurityGroup":  "sg-06c8ad19a3caefade",
-    "InstanceId":  null,
-    "PublicIp":  "54.196.192.88"
+    "PublicIp":  "54.196.192.88",
+    "InstanceId":  "i-0019cc2799fe7256a"
 }
