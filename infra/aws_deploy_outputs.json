@@ -1,5 +1,5 @@
 {
-    "SecurityGroup":  null,
+    "SecurityGroup":  "sg-06c8ad19a3caefade",
     "InstanceId":  null,
     "PublicIp":  "54.196.192.88"
 }
